@@ -8,7 +8,7 @@ public interface Controller {
     void step();
 
     /**
-     * while isDone returns false, the action ludicrousspeed.simulator will block and step.
+     * while isDone returns false, the action simulator will block and step.
      */
     boolean isDone();
 }
