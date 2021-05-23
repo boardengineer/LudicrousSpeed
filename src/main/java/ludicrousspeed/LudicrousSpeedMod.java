@@ -8,7 +8,6 @@ import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import ludicrousspeed.simulator.ActionSimulator;
 
 public class LudicrousSpeedMod implements PreUpdateSubscriber {
-
     /**
      * Set this controller to your own custom logic
      */
@@ -22,10 +21,12 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber {
 
     @Override
     public void receivePreUpdate() {
-        if (LudicrousSpeedMod.plaidMode) {
-            ActionSimulator.actionLoop();
-        } else if (shouldNormalUpdate()) {
-            controller.step();
+        if (AbstractDungeon.currMapNode != null && AbstractDungeon.getCurrRoom().monsters != null) {
+            if (LudicrousSpeedMod.plaidMode) {
+                ActionSimulator.actionLoop();
+            } else if (shouldNormalUpdate()) {
+                controller.step();
+            }
         }
     }
 

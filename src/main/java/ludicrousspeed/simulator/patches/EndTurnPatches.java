@@ -29,7 +29,7 @@ public class EndTurnPatches {
     public static class NoNaturalEOT {
         @SpirePrefixPatch
         public static SpireReturn doNothing() {
-            if(LudicrousSpeedMod.plaidMode) {
+            if (LudicrousSpeedMod.plaidMode) {
                 System.err.println("how did we get here?");
             }
             return SpireReturn.Continue();

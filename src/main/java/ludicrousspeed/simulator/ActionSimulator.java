@@ -39,59 +39,54 @@ public class ActionSimulator {
      * the loop will exit.
      */
     public static void actionLoop() {
-        if (actionManager.phase == GameActionManager.Phase.EXECUTING_ACTIONS || !actionManager.monsterQueue
-                .isEmpty() || shouldStepAiController()) {
+        while (shouldWaitOnActions() || shouldStepAiController()) {
+            AbstractDungeon.topLevelEffects.clear();
+            AbstractDungeon.effectList.clear();
+            AbstractDungeon.effectsQueue.clear();
 
-            while (shouldWaitOnActions() || shouldStepAiController()) {
-                AbstractDungeon.topLevelEffects.clear();
-                AbstractDungeon.effectList.clear();
-                AbstractDungeon.effectsQueue.clear();
+            // TODO this is going to have consequences
+            actionManager.cardsPlayedThisCombat.clear();
 
-                // TODO this is going to have consequences
-                actionManager.cardsPlayedThisCombat.clear();
-
-                if (shouldWaitOnActions()) {
-                    while (actionManager.currentAction != null && !AbstractDungeon.isScreenUp) {
-                        if (actionManager.currentAction instanceof SetAnimationAction) {
-                            actionManager.currentAction = null;
-                        } else if (actionManager.currentAction instanceof ShowMoveNameAction) {
-                            actionManager.currentAction = null;
-                        } else if (actionManager.currentAction instanceof WaitAction) {
-                            actionManager.currentAction = null;
-                        } else if (actionManager.currentAction instanceof SFXAction) {
-                            actionManager.currentAction = null;
-                        }
-
-                        if (actionManager.currentAction != null) {
-                            if (!actionManager.currentAction.isDone) {
-                                actionManager.currentAction.update();
-                            }
-                        }
-
-                        if (actionManager.currentAction != null &&
-                                actionManager.currentAction.isDone && !AbstractDungeon.isScreenUp) {
-                            actionManager.currentAction = null;
-                        }
-
-                        if (!AbstractDungeon.isScreenUp) {
-                            ActionSimulator.ActionManageUpdate();
-                        }
-
+            if (shouldWaitOnActions()) {
+                while (actionManager.currentAction != null && !AbstractDungeon.isScreenUp) {
+                    if (actionManager.currentAction instanceof SetAnimationAction) {
+                        actionManager.currentAction = null;
+                    } else if (actionManager.currentAction instanceof ShowMoveNameAction) {
+                        actionManager.currentAction = null;
+                    } else if (actionManager.currentAction instanceof WaitAction) {
+                        actionManager.currentAction = null;
+                    } else if (actionManager.currentAction instanceof SFXAction) {
+                        actionManager.currentAction = null;
                     }
-                } else if (shouldStepAiController()) {
-                    LudicrousSpeedMod.controller.step();
+
+                    if (actionManager.currentAction != null) {
+                        if (!actionManager.currentAction.isDone) {
+                            actionManager.currentAction.update();
+                        }
+                    }
+
+                    if (actionManager.currentAction != null &&
+                            actionManager.currentAction.isDone && !AbstractDungeon.isScreenUp) {
+                        actionManager.currentAction = null;
+                    }
+
+                    if (!AbstractDungeon.isScreenUp) {
+                        ActionSimulator.ActionManageUpdate();
+                    }
+
                 }
-
-                ActionSimulator.roomUpdate();
+            } else if (shouldStepAiController()) {
+                LudicrousSpeedMod.controller.step();
             }
 
-            System.err.println("exiting loop ");
-            if (actionManager.currentAction == null && !AbstractDungeon.isScreenUp) {
-                ActionSimulator.advanceActionQueue();
-                AbstractDungeon
-                        .getCurrRoom().phase = AbstractRoom.RoomPhase.COMBAT;
-            }
+            ActionSimulator.roomUpdate();
+        }
 
+        System.err.println("exiting loop ");
+        if (actionManager.currentAction == null && !AbstractDungeon.isScreenUp) {
+            ActionSimulator.advanceActionQueue();
+            AbstractDungeon
+                    .getCurrRoom().phase = AbstractRoom.RoomPhase.COMBAT;
         }
     }
 
