@@ -29,7 +29,7 @@ public class ServerStartupPatches {
 
                 // TODO this needs to be the actual character class or bad things happen
                 new Exordium(CardCrawlGame.characterManager
-                        .getCharacter(AbstractPlayer.PlayerClass.DEFECT), new ArrayList<>());
+                        .getCharacter(AbstractPlayer.PlayerClass.IRONCLAD), new ArrayList<>());
 
                 CardCrawlGame.dungeon.currMapNode.room = new EmptyRoom();
 
