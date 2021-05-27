@@ -1,5 +1,6 @@
 package ludicrousspeed.simulator;
 
+import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.ClearCardQueueAction;
 import com.megacrit.cardcrawl.actions.GameActionManager;
 import com.megacrit.cardcrawl.actions.animations.SetAnimationAction;
@@ -7,6 +8,7 @@ import com.megacrit.cardcrawl.actions.common.DiscardAtEndOfTurnAction;
 import com.megacrit.cardcrawl.actions.common.DrawCardAction;
 import com.megacrit.cardcrawl.actions.common.EnableEndTurnButtonAction;
 import com.megacrit.cardcrawl.actions.common.ShowMoveNameAction;
+import com.megacrit.cardcrawl.actions.defect.TriggerEndOfTurnOrbsAction;
 import com.megacrit.cardcrawl.actions.utility.SFXAction;
 import com.megacrit.cardcrawl.actions.utility.UseCardAction;
 import com.megacrit.cardcrawl.actions.utility.WaitAction;
@@ -17,7 +19,6 @@ import com.megacrit.cardcrawl.daily.mods.ControlledChaos;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.ModHelper;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
-import com.megacrit.cardcrawl.orbs.AbstractOrb;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.relics.UnceasingTop;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
@@ -74,9 +75,15 @@ public class ActionSimulator {
                         ActionSimulator.ActionManageUpdate();
                     }
 
+                    if (!AbstractDungeon.isScreenUp) {
+                        ActionSimulator.ActionManageUpdate();
+                    }
+
                 }
             } else if (shouldStepAiController()) {
-                LudicrousSpeedMod.controller.step();
+                if (LudicrousSpeedMod.controller != null) {
+                    LudicrousSpeedMod.controller.step();
+                }
             }
 
             ActionSimulator.roomUpdate();
@@ -93,6 +100,7 @@ public class ActionSimulator {
     public static void callEndOfTurnActions() {
         AbstractDungeon.getCurrRoom().applyEndOfTurnRelics();
         AbstractDungeon.getCurrRoom().applyEndOfTurnPreCardPowers();
+        actionManager.addToBottom(new TriggerEndOfTurnOrbsAction());
 
         Iterator var1 = AbstractDungeon.player.hand.group.iterator();
 
@@ -298,8 +306,11 @@ public class ActionSimulator {
             ActionSimulator.ActionManageUpdate();
             if (!AbstractDungeon.getCurrRoom().monsters
                     .areMonstersBasicallyDead() && AbstractDungeon.player.currentHealth > 0) {
-                if (AbstractDungeon.player.endTurnQueued && AbstractDungeon.actionManager.cardQueue
-                        .isEmpty() && !AbstractDungeon.actionManager.hasControl) {
+                if (
+                        AbstractDungeon.player.endTurnQueued &&
+                                AbstractDungeon.actionManager.cardQueue.isEmpty() &&
+                                !AbstractDungeon.actionManager.hasControl && actionManager.actions
+                                .isEmpty()) {
                     AbstractDungeon.player.endTurnQueued = false;
                     AbstractDungeon.player.isEndingTurn = true;
                 }
@@ -314,7 +325,12 @@ public class ActionSimulator {
     public static void roomEndTurn() {
         AbstractDungeon.player.applyEndOfTurnTriggers();
 
-        AbstractDungeon.player.orbs.forEach(AbstractOrb::onEndOfTurn);
+//        if (AbstractDungeon.player.hasPower("Focus")) {
+//            AbstractDungeon.player.orbs.stream().filter(orb -> !(orb instanceof EmptyOrbSlot))
+//                                       .forEach(AbstractOrb::applyFocus);
+//        }
+//        AbstractDungeon.player.orbs.forEach(AbstractOrb::onEndOfTurn);
+//        actionManager.addToBottom(new TriggerEndOfTurnOrbsAction());
 
         AbstractDungeon.actionManager.addToBottom(new ClearCardQueueAction());
         AbstractDungeon.actionManager.addToBottom(new DiscardAtEndOfTurnAction());
@@ -364,7 +380,7 @@ public class ActionSimulator {
         }
 
         return actionManager.phase == GameActionManager.Phase.WAITING_ON_USER &&
-                !LudicrousSpeedMod.controller.isDone();
+                LudicrousSpeedMod.controller != null && !LudicrousSpeedMod.controller.isDone();
     }
 
     public static boolean shouldWaitOnActions() {
@@ -376,6 +392,16 @@ public class ActionSimulator {
         // Screens wait for users even though there are actions in the action manager
         if (AbstractDungeon.isScreenUp) {
             return false;
+        }
+
+        if (AbstractDungeon.player.isEndingTurn || !actionManager.cardQueue.isEmpty()) {
+            return true;
+        }
+
+        for (AbstractGameAction action : actionManager.actions) {
+            if (action instanceof TriggerEndOfTurnOrbsAction) {
+                return true;
+            }
         }
 
         // Start of Turn

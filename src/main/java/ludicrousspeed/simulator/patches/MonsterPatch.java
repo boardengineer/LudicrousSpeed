@@ -1,6 +1,8 @@
 package ludicrousspeed.simulator.patches;
 
 import basemod.ReflectionHacks;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
+import com.megacrit.cardcrawl.actions.common.MonsterStartTurnAction;
 import ludicrousspeed.LudicrousSpeedMod;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
@@ -249,6 +251,19 @@ public class MonsterPatch {
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = MonsterStartTurnAction.class,
+            method = "update"
+    )
+    public static class BetterMonsterStartTurnPatch {
+        @SpirePrefixPatch
+        public static SpireReturn betterUpdate(MonsterStartTurnAction action) {
+            AbstractDungeon.getCurrRoom().monsters.applyPreTurnLogic();
+            action.isDone = true;
+            return SpireReturn.Return(null);
         }
     }
 }

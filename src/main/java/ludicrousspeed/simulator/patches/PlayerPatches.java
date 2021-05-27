@@ -76,7 +76,8 @@ public class PlayerPatches {
                         return SpireReturn.Return(null);
                     }
                 } else if (AbstractDungeon.actionManager.cardQueue
-                        .isEmpty() && !AbstractDungeon.actionManager.hasControl) {
+                        .isEmpty() && !AbstractDungeon.actionManager.hasControl &&
+                        AbstractDungeon.actionManager.actions.isEmpty()) {
                     player.endTurnQueued = false;
                     player.isEndingTurn = true;
                 }

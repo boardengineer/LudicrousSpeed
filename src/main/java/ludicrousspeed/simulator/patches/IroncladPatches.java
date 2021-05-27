@@ -2,9 +2,10 @@ package ludicrousspeed.simulator.patches;
 
 import basemod.ReflectionHacks;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.evacipated.cardcrawl.modthespire.lib.*;
+import com.evacipated.cardcrawl.modthespire.lib.SpireInsertPatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
 import com.megacrit.cardcrawl.cards.DamageInfo;
-import com.megacrit.cardcrawl.cards.red.InfernalBlade;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.characters.Ironclad;
 import com.megacrit.cardcrawl.core.AbstractCreature;
@@ -159,22 +160,6 @@ public class IroncladPatches {
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();
-        }
-    }
-
-    @SpirePatch(
-            clz = InfernalBlade.class,
-            method = "use"
-    )
-    public static class SpyOnInfernalBlade {
-        @SpirePrefixPatch
-        public static void before(InfernalBlade blade, AbstractPlayer player, AbstractMonster monster) {
-            System.err.println("rng before " + AbstractDungeon.cardRandomRng.counter);
-        }
-
-        @SpirePostfixPatch
-        public static void after(InfernalBlade blade, AbstractPlayer player, AbstractMonster monster) {
-            System.err.println("rng after " + AbstractDungeon.cardRandomRng.counter);
         }
     }
 }
