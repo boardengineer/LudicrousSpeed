@@ -82,7 +82,6 @@ public class ActionSimulator {
             ActionSimulator.roomUpdate();
         }
 
-        System.err.println("exiting loop ");
         if (actionManager.currentAction == null && !AbstractDungeon.isScreenUp) {
             ActionSimulator.advanceActionQueue();
             AbstractDungeon
