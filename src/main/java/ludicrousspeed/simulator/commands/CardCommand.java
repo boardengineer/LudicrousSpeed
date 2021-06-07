@@ -9,13 +9,20 @@ import com.megacrit.cardcrawl.cards.CardQueueItem;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import ludicrousspeed.LudicrousSpeedMod;
+import savestate.SaveState;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 public class CardCommand implements Command {
     private final int cardIndex;
     private final int monsterIndex;
     public final String displayString;
+
+    private String diffStateString = null;
 
     public CardCommand(int cardIndex, int monsterIndex, String displayString) {
         this.cardIndex = cardIndex;
@@ -37,19 +44,46 @@ public class CardCommand implements Command {
         this.displayString = parsed.get("display_string").getAsString();
     }
 
+    public CardCommand(String jsonString, String diffStateString) {
+        JsonObject parsed = new JsonParser().parse(jsonString).getAsJsonObject();
+
+        this.cardIndex = parsed.get("card_index").getAsInt();
+        this.monsterIndex = parsed.get("monster_index").getAsInt();
+        this.displayString = parsed.get("display_string").getAsString();
+        this.diffStateString = diffStateString;
+    }
+
     @Override
     public void execute() {
+        if (diffStateString != null) {
+            try {
+                String actualState = new SaveState().diffEncode();
+                String expectedState = Files.lines(Paths.get(diffStateString))
+                                            .collect(Collectors.joining());
+
+                if (!SaveState.diff(actualState, expectedState)) {
+                    System.err.println("PANIC PANIC PANIC " + this.toString());
+                    LudicrousSpeedMod.mustRestart = true;
+                    return;
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         AbstractDungeon.player.hand.refreshHandLayout();
         AbstractCard card = AbstractDungeon.player.hand.group.get(cardIndex);
         AbstractMonster monster = null;
 
         if (monsterIndex != -1) {
             monster = AbstractDungeon.getMonsters().monsters.get(monsterIndex);
-            if (!LudicrousSpeedMod.plaidMode) {
-                String allMonsters = AbstractDungeon.getMonsters().monsters.stream().map(m -> String
-                        .format("hp:%s\t", m.currentHealth)).collect(Collectors.joining());
-                System.err.println(allMonsters);
-            }
+//            if (!LudicrousSpeedMod.plaidMode) {
+//                String allMonsters = AbstractDungeon.getMonsters().monsters.stream().map(m -> String
+//                        .format("hp:%s\t", m.currentHealth)).collect(Collectors.joining());
+//                System.err.println(allMonsters);
+//            }
         }
 
         AbstractDungeon.actionManager.cardQueue.add(new CardQueueItem(card, monster));

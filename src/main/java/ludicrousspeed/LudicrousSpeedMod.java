@@ -19,6 +19,8 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber {
      */
     public static boolean plaidMode = false;
 
+    public static boolean mustRestart = false;
+
     @Override
     public void receivePreUpdate() {
         if (AbstractDungeon.currMapNode != null && AbstractDungeon.getCurrRoom().monsters != null) {

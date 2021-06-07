@@ -48,7 +48,13 @@ public class ActionSimulator {
             // TODO this is going to have consequences
             actionManager.cardsPlayedThisCombat.clear();
 
-            if (shouldWaitOnActions()) {
+            if (shouldStepAiController()) {
+                if (LudicrousSpeedMod.controller != null) {
+                    LudicrousSpeedMod.controller.step();
+                }
+            }
+
+            while (shouldWaitOnActions()) {
                 while (actionManager.currentAction != null && !AbstractDungeon.isScreenUp) {
                     if (actionManager.currentAction instanceof SetAnimationAction) {
                         actionManager.currentAction = null;
@@ -70,23 +76,16 @@ public class ActionSimulator {
                             actionManager.currentAction.isDone && !AbstractDungeon.isScreenUp) {
                         actionManager.currentAction = null;
                     }
-
-                    if (!AbstractDungeon.isScreenUp) {
-                        ActionSimulator.ActionManageUpdate();
-                    }
-
-                    if (!AbstractDungeon.isScreenUp) {
-                        ActionSimulator.ActionManageUpdate();
-                    }
-
                 }
-            } else if (shouldStepAiController()) {
-                if (LudicrousSpeedMod.controller != null) {
-                    LudicrousSpeedMod.controller.step();
+                while (shouldWaitOnActions() && actionManager.currentAction == null) {
+                    ActionSimulator.ActionManageUpdate();
                 }
             }
 
+
+//            if (!shouldWaitOnActions()) {
             ActionSimulator.roomUpdate();
+//            }
         }
 
         if (actionManager.currentAction == null && !AbstractDungeon.isScreenUp) {
@@ -100,7 +99,9 @@ public class ActionSimulator {
     public static void callEndOfTurnActions() {
         AbstractDungeon.getCurrRoom().applyEndOfTurnRelics();
         AbstractDungeon.getCurrRoom().applyEndOfTurnPreCardPowers();
+
         actionManager.addToBottom(new TriggerEndOfTurnOrbsAction());
+
 
         Iterator var1 = AbstractDungeon.player.hand.group.iterator();
 
@@ -116,23 +117,42 @@ public class ActionSimulator {
         }
     }
 
+    public static void advanceActionQueue() {
+        advanceActionQueue(false);
+    }
+
     /**
      * Based on ActionManager.getNextAction()
      */
-    public static void advanceActionQueue() {
+    public static void advanceActionQueue(boolean shouldLog) {
         if (!actionManager.actions.isEmpty()) {
+            if (shouldLog) {
+                System.err.println("case 1 " + actionManager.actions + " " + shouldWaitOnActions());
+            }
+
             actionManager.currentAction = actionManager.actions.remove(0);
             actionManager.phase = GameActionManager.Phase.EXECUTING_ACTIONS;
             actionManager.hasControl = true;
         } else if (!actionManager.preTurnActions.isEmpty()) {
+            if (shouldLog) {
+                System.err.println("case 2");
+            }
+
             actionManager.currentAction = actionManager.preTurnActions.remove(0);
             actionManager.phase = GameActionManager.Phase.EXECUTING_ACTIONS;
             actionManager.hasControl = true;
         } else if (!actionManager.cardQueue.isEmpty()) {
+            if (shouldLog) {
+                System.err.println("case 3");
+            }
+
             actionManager.usingCard = true;
             CardQueueItem queueItem = actionManager.cardQueue.get(0);
             AbstractCard c = queueItem.card;
             if (c == null) {
+                if (shouldLog) {
+                    System.err.println("case 3.1");
+                }
                 callEndOfTurnActions();
             } else if (c.equals(actionManager.lastCard)) {
                 actionManager.lastCard = null;
@@ -159,6 +179,9 @@ public class ActionSimulator {
                     .canUse(AbstractDungeon.player, queueItem.monster) && !queueItem.card.dontTriggerOnUseCard) {
                 AbstractDungeon.player.limbo.clear();
             } else {
+                if (shouldLog) {
+                    System.err.println("case 3.2");
+                }
                 canPlayCard = true;
                 if (c.freeToPlay()) {
                     c.freeToPlayOnce = true;
@@ -228,6 +251,7 @@ public class ActionSimulator {
             actionManager.monsterQueue.remove(0);
         } else if (actionManager.turnHasEnded && !AbstractDungeon.getMonsters()
                                                                  .areMonstersBasicallyDead()) {
+//            actionManager.addToBottom(new TriggerEndOfTurnOrbsAction());
             if (!AbstractDungeon.getCurrRoom().skipMonsterTurn) {
                 AbstractDungeon.getCurrRoom().monsters.applyEndOfTurnPowers();
             }
@@ -273,10 +297,15 @@ public class ActionSimulator {
         }
     }
 
+
     public static void ActionManageUpdate() {
+        ActionManageUpdate(false);
+    }
+
+    public static void ActionManageUpdate(boolean shouldLog) {
         switch (actionManager.phase) {
             case WAITING_ON_USER:
-                ActionSimulator.advanceActionQueue();
+                ActionSimulator.advanceActionQueue(shouldLog);
                 break;
             case EXECUTING_ACTIONS:
                 if (actionManager.currentAction != null && !actionManager.currentAction.isDone) {
@@ -284,7 +313,7 @@ public class ActionSimulator {
                 } else {
                     actionManager.previousAction = actionManager.currentAction;
                     actionManager.currentAction = null;
-                    ActionSimulator.advanceActionQueue();
+                    ActionSimulator.advanceActionQueue(shouldLog);
                     if (actionManager.currentAction == null && AbstractDungeon
                             .getCurrRoom().phase == AbstractRoom.RoomPhase.COMBAT && !actionManager.usingCard) {
                         actionManager.phase = GameActionManager.Phase.WAITING_ON_USER;
@@ -303,7 +332,7 @@ public class ActionSimulator {
         updateMonsters();
 
         if (!AbstractDungeon.isScreenUp) {
-            ActionSimulator.ActionManageUpdate();
+//            ActionSimulator.ActionManageUpdate(true);
             if (!AbstractDungeon.getCurrRoom().monsters
                     .areMonstersBasicallyDead() && AbstractDungeon.player.currentHealth > 0) {
                 if (
@@ -325,12 +354,14 @@ public class ActionSimulator {
     public static void roomEndTurn() {
         AbstractDungeon.player.applyEndOfTurnTriggers();
 
+
+
 //        if (AbstractDungeon.player.hasPower("Focus")) {
 //            AbstractDungeon.player.orbs.stream().filter(orb -> !(orb instanceof EmptyOrbSlot))
 //                                       .forEach(AbstractOrb::applyFocus);
 //        }
 //        AbstractDungeon.player.orbs.forEach(AbstractOrb::onEndOfTurn);
-//        actionManager.addToBottom(new TriggerEndOfTurnOrbsAction());
+//
 
         AbstractDungeon.actionManager.addToBottom(new ClearCardQueueAction());
         AbstractDungeon.actionManager.addToBottom(new DiscardAtEndOfTurnAction());
@@ -367,7 +398,7 @@ public class ActionSimulator {
     }
 
     public static boolean shouldStepAiController() {
-        if (LudicrousSpeedMod.controller == null || LudicrousSpeedMod.controller.isDone()) {
+        if (LudicrousSpeedMod.controller == null || LudicrousSpeedMod.controller.isDone() || LudicrousSpeedMod.mustRestart) {
             return false;
         }
 
@@ -385,7 +416,7 @@ public class ActionSimulator {
 
     public static boolean shouldWaitOnActions() {
         // Only freeze if the AI is pathing
-        if (LudicrousSpeedMod.controller == null || LudicrousSpeedMod.controller.isDone()) {
+        if (LudicrousSpeedMod.controller == null || LudicrousSpeedMod.controller.isDone() || LudicrousSpeedMod.mustRestart) {
             return false;
         }
 

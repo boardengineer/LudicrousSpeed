@@ -8,12 +8,19 @@ import com.megacrit.cardcrawl.actions.utility.WaitAction;
 import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.potions.AbstractPotion;
+import savestate.SaveState;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 public class PotionCommand implements Command {
     private final int potionIndex;
     private final int monsterIndex;
+
+    private String diffStateString = null;
 
     public PotionCommand(int potionIndex, int monsterIndex) {
         this.potionIndex = potionIndex;
@@ -31,8 +38,36 @@ public class PotionCommand implements Command {
         this.monsterIndex = parsed.get("monster_index").getAsInt();
     }
 
+    public PotionCommand(String jsonString, String diffStateString) {
+        JsonObject parsed = new JsonParser().parse(jsonString).getAsJsonObject();
+
+        this.potionIndex = parsed.get("potion_index").getAsInt();
+        this.monsterIndex = parsed.get("monster_index").getAsInt();
+
+        this.diffStateString = diffStateString;
+    }
+
     @Override
     public void execute() {
+        if (diffStateString != null) {
+            try {
+                String actualState = new SaveState().diffEncode();
+                String expectedState = Files.lines(Paths.get(diffStateString))
+                                            .collect(Collectors.joining());
+
+                if (!SaveState.diff(actualState, expectedState)) {
+                    System.err.println("PANIC PANIC PANIC " + this.toString());
+                    LudicrousSpeedMod.mustRestart = true;
+                    return;
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
         AbstractPotion potion = AbstractDungeon.player.potions.get(potionIndex);
         AbstractCreature target = AbstractDungeon.player;
 

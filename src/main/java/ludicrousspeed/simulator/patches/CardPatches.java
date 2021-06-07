@@ -21,7 +21,6 @@ import com.megacrit.cardcrawl.screens.select.GridCardSelectScreen;
 import com.megacrit.cardcrawl.vfx.cardManip.ShowCardAndAddToDiscardEffect;
 import com.megacrit.cardcrawl.vfx.cardManip.ShowCardAndAddToHandEffect;
 import ludicrousspeed.LudicrousSpeedMod;
-import savestate.CardState;
 
 import java.util.UUID;
 
@@ -47,6 +46,7 @@ public class CardPatches {
                 _instance.color = color;
                 _instance.rarity = rarity;
                 _instance.target = target;
+                _instance.block = -1;
 
                 ReflectionHacks.setPrivate(_instance, AbstractCard.class, "damageType", dType);
                 _instance.damageTypeForTurn = dType;
@@ -213,6 +213,7 @@ public class CardPatches {
         }
     }
 
+    /*
     @SpirePatch(
             clz = AbstractCard.class,
             paramtypez = {},
@@ -250,6 +251,8 @@ public class CardPatches {
             return SpireReturn.Continue();
         }
     }
+
+     */
 
     @SpirePatch(
             clz = AbstractCard.class,
@@ -418,8 +421,6 @@ public class CardPatches {
         public static void Postfix(MakeTempCardInDiscardAction _instance) {
             if (LudicrousSpeedMod.plaidMode) {
                 _instance.isDone = true;
-                CardState.freeCard(ReflectionHacks
-                        .getPrivate(_instance, MakeTempCardInDiscardAction.class, "c"));
             }
         }
     }
@@ -457,6 +458,7 @@ public class CardPatches {
         public static SpireReturn Prefix(ScrapeFollowUpAction _instance) {
             for (AbstractCard card : DrawCardAction.drawnCards) {
                 if (card.costForTurn != 0 && !card.freeToPlayOnce) {
+                    card.resetAttributes();
                     AbstractDungeon.player.hand.moveToDiscardPile(card);
                     card.triggerOnManualDiscard();
                     GameActionManager.incrementDiscard(false);
@@ -501,7 +503,6 @@ public class CardPatches {
 
                 if (AbstractDungeon.player.limbo.contains(card)) {
                     AbstractDungeon.player.limbo.removeCard(card);
-                    CardState.freeCard(card);
                 }
 
                 AbstractDungeon.player.cardInUse = null;

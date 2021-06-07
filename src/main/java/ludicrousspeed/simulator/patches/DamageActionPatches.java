@@ -1,4 +1,4 @@
-package ludicrousspeed.simulator.patches;
+    package ludicrousspeed.simulator.patches;
 
 import basemod.ReflectionHacks;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;

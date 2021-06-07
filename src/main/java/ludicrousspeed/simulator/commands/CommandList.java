@@ -61,7 +61,7 @@ public final class CommandList {
                                 AbstractMonster monster = monsters.get(j);
                                 if (card.canUse(player, monster) && !monster.isDeadOrEscaped()) {
                                     commands.add(new CardCommand(cardEntry.getValue(), j, String
-                                            .format(card.cardID + " for " + card.costForTurn)));
+                                            .format(card.cardID + " for " + card.baseDamage)));
                                 }
                             }
                         }
