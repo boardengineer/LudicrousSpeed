@@ -1,6 +1,8 @@
 package ludicrousspeed.simulator.commands;
 
 import basemod.ReflectionHacks;
+import com.megacrit.cardcrawl.actions.common.DiscardAction;
+import com.megacrit.cardcrawl.actions.common.ExhaustAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.red.TwinStrike;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -117,9 +119,61 @@ public final class CommandList {
         if (isInHandSelect()) {
             if (AbstractDungeon.handCardSelectScreen.selectedCards.group
                     .size() < AbstractDungeon.handCardSelectScreen.numCardsToSelect) {
-                for (int i = 0; i < AbstractDungeon.player.hand.size(); i++) {
-                    commands.add(new HandSelectCommand(i));
+
+                ArrayList<Integer> orderedIndeces = new ArrayList<>();
+                if (AbstractDungeon.actionManager.currentAction instanceof DiscardAction) {
+                    HashMap<Integer, AbstractCard> indexToCardMap = new HashMap<>();
+
+                    for (int i = 0; i < AbstractDungeon.player.hand.group.size(); i++) {
+                        indexToCardMap.put(i, AbstractDungeon.player.hand.group.get(i));
+                    }
+
+                    indexToCardMap.entrySet().stream().sorted((e1, e2) -> {
+                        AbstractCard card1 = e1.getValue();
+                        AbstractCard card2 = e2.getValue();
+
+                        if (DiscardOrder.CARD_RANKS
+                                .containsKey(card1.cardID) && DiscardOrder.CARD_RANKS
+                                .containsKey(card2.cardID)) {
+                            return DiscardOrder.CARD_RANKS
+                                    .get(card1.cardID) - DiscardOrder.CARD_RANKS.get(card2.cardID);
+                        } else if (DiscardOrder.CARD_RANKS.containsKey(card1.cardID)) {
+                            return 1;
+                        }
+
+                        return 0;
+                    })
+                                  .forEach(entry -> orderedIndeces.add(entry.getKey()));
+                } else if (AbstractDungeon.actionManager.currentAction instanceof ExhaustAction) {
+                    HashMap<Integer, AbstractCard> indexToCardMap = new HashMap<>();
+
+                    for (int i = 0; i < AbstractDungeon.player.hand.group.size(); i++) {
+                        indexToCardMap.put(i, AbstractDungeon.player.hand.group.get(i));
+                    }
+
+                    indexToCardMap.entrySet().stream().sorted((e1, e2) -> {
+                        AbstractCard card1 = e1.getValue();
+                        AbstractCard card2 = e2.getValue();
+
+                        if (ExhaustOrder.CARD_RANKS
+                                .containsKey(card1.cardID) && ExhaustOrder.CARD_RANKS
+                                .containsKey(card2.cardID)) {
+                            return ExhaustOrder.CARD_RANKS
+                                    .get(card1.cardID) - ExhaustOrder.CARD_RANKS.get(card2.cardID);
+                        } else if (ExhaustOrder.CARD_RANKS.containsKey(card1.cardID)) {
+                            return 1;
+                        }
+
+                        return 0;
+                    })
+                                  .forEach(entry -> orderedIndeces.add(entry.getKey()));
+                } else {
+                    for (int i = 0; i < AbstractDungeon.player.hand.group.size(); i++) {
+                        orderedIndeces.add(i);
+                    }
                 }
+
+                orderedIndeces.forEach(index -> commands.add(new HandSelectCommand(index)));
             }
 
             if (isHandSelectConfirmButtonEnabled()) {

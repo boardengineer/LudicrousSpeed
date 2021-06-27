@@ -45,9 +45,6 @@ public class ActionSimulator {
             AbstractDungeon.effectList.clear();
             AbstractDungeon.effectsQueue.clear();
 
-            // TODO this is going to have consequences
-            actionManager.cardsPlayedThisCombat.clear();
-
             if (shouldStepAiController()) {
                 if (LudicrousSpeedMod.controller != null) {
                     LudicrousSpeedMod.controller.step();
@@ -336,10 +333,11 @@ public class ActionSimulator {
             if (!AbstractDungeon.getCurrRoom().monsters
                     .areMonstersBasicallyDead() && AbstractDungeon.player.currentHealth > 0) {
                 if (
-                        AbstractDungeon.player.endTurnQueued &&
-                                AbstractDungeon.actionManager.cardQueue.isEmpty() &&
-                                !AbstractDungeon.actionManager.hasControl && actionManager.actions
-                                .isEmpty()) {
+                        AbstractDungeon.player.endTurnQueued
+//                                && AbstractDungeon.actionManager.cardQueue.isEmpty() &&
+//                                !AbstractDungeon.actionManager.hasControl && actionManager.actions
+//                                .isEmpty()
+                ) {
                     AbstractDungeon.player.endTurnQueued = false;
                     AbstractDungeon.player.isEndingTurn = true;
                 }

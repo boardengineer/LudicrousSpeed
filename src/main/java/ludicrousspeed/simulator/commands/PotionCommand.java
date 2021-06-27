@@ -80,6 +80,8 @@ public class PotionCommand implements Command {
         }
 
         potion.use(target);
+        AbstractDungeon.player.relics.forEach(relic -> relic.onUsePotion());
+
         AbstractDungeon.topPanel.destroyPotion(potionIndex);
 
         if (!LudicrousSpeedMod.plaidMode) {

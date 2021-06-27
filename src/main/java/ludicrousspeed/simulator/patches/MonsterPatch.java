@@ -1,24 +1,23 @@
 package ludicrousspeed.simulator.patches;
 
 import basemod.ReflectionHacks;
-import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
-import com.megacrit.cardcrawl.actions.common.MonsterStartTurnAction;
-import ludicrousspeed.LudicrousSpeedMod;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
 import com.megacrit.cardcrawl.actions.animations.AnimateFastAttackAction;
 import com.megacrit.cardcrawl.actions.animations.AnimateHopAction;
 import com.megacrit.cardcrawl.actions.animations.AnimateSlowAttackAction;
 import com.megacrit.cardcrawl.actions.animations.SetAnimationAction;
 import com.megacrit.cardcrawl.actions.common.EscapeAction;
+import com.megacrit.cardcrawl.actions.common.MonsterStartTurnAction;
 import com.megacrit.cardcrawl.actions.common.SpawnMonsterAction;
 import com.megacrit.cardcrawl.actions.unique.SummonGremlinAction;
-import com.megacrit.cardcrawl.cards.red.PommelStrike;
 import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.monsters.EnemyMoveInfo;
 import com.megacrit.cardcrawl.powers.AbstractPower;
+import ludicrousspeed.LudicrousSpeedMod;
 import savestate.fastobjects.AnimationStateFast;
 
 public class MonsterPatch {
@@ -190,8 +189,6 @@ public class MonsterPatch {
             method = "getSmartPosition"
     )
     public static class SummonGremlinActionPatch {
-        PommelStrike power;
-
         public static SpireReturn Prefix(SummonGremlinAction _instance) {
             return SpireReturn.Return(0);
         }
@@ -261,7 +258,9 @@ public class MonsterPatch {
     public static class BetterMonsterStartTurnPatch {
         @SpirePrefixPatch
         public static SpireReturn betterUpdate(MonsterStartTurnAction action) {
-            AbstractDungeon.getCurrRoom().monsters.applyPreTurnLogic();
+            if(!action.isDone) {
+                AbstractDungeon.getCurrRoom().monsters.applyPreTurnLogic();
+            }
             action.isDone = true;
             return SpireReturn.Return(null);
         }

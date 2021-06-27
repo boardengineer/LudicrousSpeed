@@ -1,10 +1,12 @@
 package ludicrousspeed.simulator.patches;
 
+import basemod.ReflectionHacks;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
 import com.megacrit.cardcrawl.actions.common.GainBlockAction;
+import com.megacrit.cardcrawl.actions.unique.LoseEnergyAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
@@ -99,6 +101,26 @@ public class PlayerPatches {
             if (LudicrousSpeedMod.plaidMode) {
                 action.isDone = true;
             }
+        }
+    }
+
+    @SpirePatch(
+            clz = LoseEnergyAction.class,
+            paramtypez = {},
+            method = "update"
+    )
+    public static class LoseEnergyActionFastPatch {
+        @SpirePrefixPatch
+        public static SpireReturn insantUpdatePatch(LoseEnergyAction action) {
+            if (LudicrousSpeedMod.plaidMode) {
+                int energyLoss = ReflectionHacks
+                        .getPrivate(action, LoseEnergyAction.class, "energyLoss");
+                AbstractDungeon.player.loseEnergy(energyLoss);
+
+                action.isDone = true;
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
         }
     }
 }
