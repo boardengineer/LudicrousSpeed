@@ -215,9 +215,10 @@ public class MonsterPatch {
     public static class NoShowInetntPatch {
         public static SpireReturn Prefix(AbstractMonster _instance) {
             if (LudicrousSpeedMod.plaidMode) {
-
                 EnemyMoveInfo move = ReflectionHacks
                         .getPrivate(_instance, AbstractMonster.class, "move");
+
+                _instance.intent = move.intent;
                 _instance.nextMove = move.nextMove;
                 _instance.setIntentBaseDmg(move.baseDamage);
                 return SpireReturn.Return(null);

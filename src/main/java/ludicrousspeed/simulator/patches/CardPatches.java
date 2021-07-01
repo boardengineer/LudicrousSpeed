@@ -8,8 +8,6 @@ import com.megacrit.cardcrawl.actions.GameActionManager;
 import com.megacrit.cardcrawl.actions.common.*;
 import com.megacrit.cardcrawl.actions.defect.ScrapeFollowUpAction;
 import com.megacrit.cardcrawl.actions.utility.ShowCardAction;
-import com.megacrit.cardcrawl.actions.watcher.ChangeStanceAction;
-import com.megacrit.cardcrawl.actions.watcher.FearNoEvilAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.CardGroup;
 import com.megacrit.cardcrawl.cards.DamageInfo;
@@ -663,27 +661,6 @@ public class CardPatches {
                     action.isDone = false;
                 }
             }
-        }
-    }
-
-    @SpirePatch(clz = FearNoEvilAction.class, method = "update")
-    public static class FearNoEvilPatch {
-        @SpirePrefixPatch
-        public static SpireReturn doBetterFearNoEvilAction(FearNoEvilAction action) {
-            if (LudicrousSpeedMod.plaidMode) {
-                AbstractMonster m = ReflectionHacks.getPrivate(action, FearNoEvilAction.class, "m");
-                DamageInfo info = ReflectionHacks
-                        .getPrivate(action, FearNoEvilAction.class, "info");
-
-                if (m != null && m.getIntentBaseDmg() >= 0) {
-                    AbstractDungeon.actionManager.addToTop(new ChangeStanceAction("Calm"));
-                }
-
-                AbstractDungeon.actionManager
-                        .addToTop(new DamageAction(m, info, AbstractGameAction.AttackEffect.SLASH_HEAVY));
-                action.isDone = true;
-            }
-            return SpireReturn.Continue();
         }
     }
 }
