@@ -2,10 +2,13 @@ package ludicrousspeed.simulator.patches;
 
 import basemod.ReflectionHacks;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import com.megacrit.cardcrawl.actions.common.RemoveSpecificPowerAction;
+import com.megacrit.cardcrawl.actions.unique.RemoveDebuffsAction;
+import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.powers.AbstractPower;
@@ -129,6 +132,19 @@ public class PowerPatches {
         public static void Postfix(RemoveSpecificPowerAction _instance) {
             if (LudicrousSpeedMod.plaidMode) {
                 _instance.isDone = true;
+            }
+        }
+    }
+
+    @SpirePatch(clz = RemoveDebuffsAction.class, method = "update")
+    public static class updateDescriptionForRemovePatch {
+        @SpirePrefixPatch
+        public static void updateDescription(RemoveDebuffsAction action) {
+            if (LudicrousSpeedMod.plaidMode) {
+                AbstractCreature c = ReflectionHacks
+                        .getPrivate(action, RemoveDebuffsAction.class, "c");
+
+                c.powers.forEach(p -> p.updateDescription());
             }
         }
     }
