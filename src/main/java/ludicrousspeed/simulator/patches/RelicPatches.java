@@ -3,8 +3,10 @@ package ludicrousspeed.simulator.patches;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInsertPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
+import com.megacrit.cardcrawl.helpers.ImageMaster;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.relics.AncientTeaSet;
 import com.megacrit.cardcrawl.relics.BottledFlame;
@@ -113,6 +115,19 @@ public class RelicPatches {
     public static class FixDescriptionNPE {
         public static void Replace(BottledFlame _instance) {
 
+        }
+    }
+
+    @SpirePatch(clz = ImageMaster.class, paramtypez = {String.class}, method = "loadImage")
+    public static class noLoadImagesPatch {
+        @SpirePrefixPatch
+        public static SpireReturn noLoad(String imgUrl) {
+            if (LudicrousSpeedMod.plaidMode) {
+//                System.err.println("sanity this is happening");
+                return SpireReturn.Return(ImageMaster.BOSS_CHEST_OPEN);
+            }
+//            System.err.println("sanity this is happening");
+            return SpireReturn.Continue();
         }
     }
 }

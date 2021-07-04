@@ -148,4 +148,15 @@ public class PowerPatches {
             }
         }
     }
+
+    @SpirePatch(clz = AbstractPower.class, method = "flash")
+    public static class NoFlashClass {
+        @SpirePrefixPatch
+        public static SpireReturn noFlash(AbstractPower power) {
+            if(LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
 }
