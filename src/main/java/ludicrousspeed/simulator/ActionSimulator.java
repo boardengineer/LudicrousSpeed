@@ -1,5 +1,6 @@
 package ludicrousspeed.simulator;
 
+import basemod.BaseMod;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.ClearCardQueueAction;
 import com.megacrit.cardcrawl.actions.GameActionManager;
@@ -164,6 +165,7 @@ public class ActionSimulator {
 
             boolean canPlayCard = false;
             if (c != null) {
+                BaseMod.publishOnCardUse(queueItem.card);
                 c.isInAutoplay = queueItem.autoplayCard;
             }
 
