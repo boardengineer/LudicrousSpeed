@@ -16,7 +16,6 @@ import com.megacrit.cardcrawl.cards.green.DaggerSpray;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
-import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import com.megacrit.cardcrawl.screens.select.GridCardSelectScreen;
 import com.megacrit.cardcrawl.vfx.cardManip.ShowCardAndAddToDiscardEffect;
 import com.megacrit.cardcrawl.vfx.cardManip.ShowCardAndAddToHandEffect;
@@ -557,8 +556,7 @@ public class CardPatches {
     )
     public static class SkipAutoUnhoverCardPatch {
         public static SpireReturn Prefix(GridCardSelectScreen screen) {
-            if (LudicrousSpeedMod.plaidMode || AbstractDungeon
-                    .getCurrRoom().phase == AbstractRoom.RoomPhase.COMBAT) {
+            if (LudicrousSpeedMod.plaidMode) {
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();
