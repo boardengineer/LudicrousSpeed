@@ -556,7 +556,7 @@ public class CardPatches {
     )
     public static class SkipAutoUnhoverCardPatch {
         public static SpireReturn Prefix(GridCardSelectScreen screen) {
-            if (LudicrousSpeedMod.plaidMode) {
+            if (LudicrousSpeedMod.controller != null && !LudicrousSpeedMod.controller.isDone()) {
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();

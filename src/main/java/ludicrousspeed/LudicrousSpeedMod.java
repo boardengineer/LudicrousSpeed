@@ -79,4 +79,8 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber {
 
         return shouldStep();
     }
+
+    private static boolean playerUsingHandSelect() {
+        return AbstractDungeon.isScreenUp && AbstractDungeon.screen == AbstractDungeon.CurrentScreen.HAND_SELECT;
+    }
 }

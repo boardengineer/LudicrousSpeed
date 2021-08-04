@@ -3,12 +3,9 @@ package ludicrousspeed.simulator.commands;
 import basemod.ReflectionHacks;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.megacrit.cardcrawl.actions.GameActionManager;
-import com.megacrit.cardcrawl.actions.utility.WaitAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.screens.select.GridCardSelectScreen;
-import ludicrousspeed.LudicrousSpeedMod;
 
 public class GridSelectCommand implements Command {
     private final int cardIndex;
@@ -34,12 +31,7 @@ public class GridSelectCommand implements Command {
         target.hb.clicked = true;
 
         AbstractDungeon.gridSelectScreen.update();
-
-        if (!LudicrousSpeedMod.plaidMode) {
-            AbstractDungeon.actionManager.addToBottom(new WaitAction(.2F));
-        } else {
-            AbstractDungeon.actionManager.phase = GameActionManager.Phase.EXECUTING_ACTIONS;
-        }
+        AbstractDungeon.closeCurrentScreen();
     }
 
     @Override
