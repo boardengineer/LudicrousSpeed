@@ -8,9 +8,11 @@ import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerAction;
 import com.megacrit.cardcrawl.actions.common.RemoveSpecificPowerAction;
 import com.megacrit.cardcrawl.actions.unique.RemoveDebuffsAction;
+import com.megacrit.cardcrawl.cards.DamageInfo;
 import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
+import com.megacrit.cardcrawl.monsters.beyond.AwakenedOne;
 import com.megacrit.cardcrawl.powers.AbstractPower;
 import com.megacrit.cardcrawl.powers.NoDrawPower;
 import ludicrousspeed.LudicrousSpeedMod;
@@ -136,6 +138,19 @@ public class PowerPatches {
         }
     }
 
+    @SpirePatch(clz = AbstractPower.class, method = "flash")
+    public static class NoFlashClass {
+        @SpirePrefixPatch
+        public static SpireReturn noFlash(AbstractPower power) {
+            if(LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    // Some powers, such as strength, chat from buff to debuffs when their counters are negative,
+    // make sure to call updateDescription so they're purged properly.
     @SpirePatch(clz = RemoveDebuffsAction.class, method = "update")
     public static class updateDescriptionForRemovePatch {
         @SpirePrefixPatch
@@ -149,14 +164,13 @@ public class PowerPatches {
         }
     }
 
-    @SpirePatch(clz = AbstractPower.class, method = "flash")
-    public static class NoFlashClass {
+    @SpirePatch(clz = AwakenedOne.class, method = "damage")
+    public static class updateDescriptionForRemoveAwakenedOneDebuffsPatch {
         @SpirePrefixPatch
-        public static SpireReturn noFlash(AbstractPower power) {
-            if(LudicrousSpeedMod.plaidMode) {
-                return SpireReturn.Return(null);
+        public static void updateDescription(AwakenedOne awakenedOne, DamageInfo info) {
+            if (LudicrousSpeedMod.plaidMode) {
+                awakenedOne.powers.forEach(p -> p.updateDescription());
             }
-            return SpireReturn.Continue();
         }
     }
 }
