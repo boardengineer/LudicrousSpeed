@@ -79,11 +79,6 @@ public class CardCommand implements Command {
 
         if (monsterIndex != -1) {
             monster = AbstractDungeon.getMonsters().monsters.get(monsterIndex);
-//            if (!LudicrousSpeedMod.plaidMode) {
-//                String allMonsters = AbstractDungeon.getMonsters().monsters.stream().map(m -> String
-//                        .format("hp:%s\t", m.currentHealth)).collect(Collectors.joining());
-//                System.err.println(allMonsters);
-//            }
         }
 
         AbstractDungeon.actionManager.cardQueue.add(new CardQueueItem(card, monster));

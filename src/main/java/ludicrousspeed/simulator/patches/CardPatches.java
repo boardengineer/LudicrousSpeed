@@ -126,6 +126,7 @@ public class CardPatches {
                     }
                 }
 
+                card.clearPowers();
                 AbstractDungeon.player.discardPile.addToTop(card);
                 AbstractDungeon.player.onCardDrawOrDiscard();
 
