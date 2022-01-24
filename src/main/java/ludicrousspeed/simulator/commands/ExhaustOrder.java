@@ -3,8 +3,11 @@ package ludicrousspeed.simulator.commands;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.colorless.Madness;
 import com.megacrit.cardcrawl.cards.colorless.Transmutation;
-import com.megacrit.cardcrawl.cards.curses.Doubt;
+import com.megacrit.cardcrawl.cards.curses.*;
 import com.megacrit.cardcrawl.cards.red.*;
+import com.megacrit.cardcrawl.cards.status.Burn;
+import com.megacrit.cardcrawl.cards.status.Slimed;
+import com.megacrit.cardcrawl.cards.status.Wound;
 
 import java.util.HashMap;
 
@@ -16,14 +19,29 @@ public class ExhaustOrder {
         uglyThing = new HashMap<>();
 
         add(new Sentinel());
+
+        // non-exhausting statuses and curses
+        add(new Normality());
+        add(new Burn());
+        add(new Pain());
+        add(new Regret());
+        add(new Shame());
+        add(new Writhe());
         add(new Doubt());
+
+        add(new Wound());
+        add(new Slimed());
+        add(new CurseOfTheBell());
+        add(new Injury());
+        add(new Necronomicurse());
+
+        // Strikes and Defends
         add(new Defend_Red());
         add(new Strike_Red());
 
         add(new Madness());
         add(new Shockwave());
         add(new SpotWeakness());
-
         add(new Transmutation());
         add(new Whirlwind());
         add(new Rage());
@@ -39,8 +57,6 @@ public class ExhaustOrder {
         add(new BattleTrance());
 
         add(new Armaments());
-
-        // Powers first
         add(new Inflame());
         add(new Rupture());
         add(new Juggernaut());
@@ -55,8 +71,6 @@ public class ExhaustOrder {
         add(new DarkEmbrace());
         add(new LimitBreak());
         add(new Metallicize());
-
-        // damage
         add(new ThunderClap());
         add(new Bludgeon());
         add(new Bash());

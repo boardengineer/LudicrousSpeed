@@ -3,8 +3,12 @@ package ludicrousspeed.simulator.commands;
 import basemod.ReflectionHacks;
 import com.megacrit.cardcrawl.actions.common.DiscardAction;
 import com.megacrit.cardcrawl.actions.common.ExhaustAction;
+import com.megacrit.cardcrawl.actions.utility.ScryAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
+import com.megacrit.cardcrawl.cards.curses.Clumsy;
 import com.megacrit.cardcrawl.cards.red.TwinStrike;
+import com.megacrit.cardcrawl.cards.status.Dazed;
+import com.megacrit.cardcrawl.cards.status.VoidCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
@@ -12,7 +16,9 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.potions.AbstractPotion;
 import com.megacrit.cardcrawl.potions.PotionSlot;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
+import com.megacrit.cardcrawl.screens.select.GridCardSelectScreen;
 import com.megacrit.cardcrawl.ui.buttons.CardSelectConfirmButton;
+import com.megacrit.cardcrawl.ui.buttons.GridSelectConfirmButton;
 import savestate.PotionState;
 
 import java.util.*;
@@ -63,7 +69,7 @@ public final class CommandList {
                                 AbstractMonster monster = monsters.get(j);
                                 if (card.canUse(player, monster) && !monster.isDeadOrEscaped()) {
                                     commands.add(new CardCommand(cardEntry.getValue(), j, String
-                                            .format(card.cardID + " for " + card.baseDamage)));
+                                            .format(card.cardID)));
                                 }
                             }
                         }
@@ -71,14 +77,14 @@ public final class CommandList {
                         if (card.target == AbstractCard.CardTarget.ALL_ENEMY || card.target == AbstractCard.CardTarget.ALL) {
                             if (card.canUse(player, null)) {
                                 commands.add(new CardCommand(cardEntry
-                                        .getValue(), card.cardID + " for " + card.baseBlock));
+                                        .getValue(), card.cardID));
                             }
                         }
 
                         if (card.target == AbstractCard.CardTarget.SELF || card.target == AbstractCard.CardTarget.SELF_AND_ENEMY || card.target == AbstractCard.CardTarget.NONE) {
                             if (card.canUse(player, null)) {
                                 commands.add(new CardCommand(cardEntry
-                                        .getValue(), card.cardID + " for " + card.baseMagicNumber));
+                                        .getValue(), card.cardID));
                             }
                         }
 
@@ -183,9 +189,49 @@ public final class CommandList {
 
         if (isInGridSelect()) {
             for (int i = 0; i < AbstractDungeon.gridSelectScreen.targetGroup.size(); i++) {
-                commands.add(new GridSelectCommand(i));
+                AbstractCard card = AbstractDungeon.gridSelectScreen.targetGroup.group.get(i);
+                if (!card.isGlowing) {
+                    // Weak hack to only scry basics curses and statuses
+                    boolean canClick = true;
+
+                    if (AbstractDungeon.actionManager.currentAction instanceof ScryAction) {
+                        canClick = false;
+                        if (card.type == AbstractCard.CardType.STATUS) {
+                            if (card.cardID != Dazed.ID && card.cardID != VoidCard.ID) {
+                                canClick = true;
+                            }
+                        }
+
+                        if (card.type == AbstractCard.CardType.CURSE) {
+                            if (card.cardID != Clumsy.ID) {
+                                canClick = true;
+                            }
+                        }
+
+                        if (card.hasTag(AbstractCard.CardTags.STARTER_DEFEND) || card
+                                .hasTag(AbstractCard.CardTags.STARTER_STRIKE)) {
+                            canClick = true;
+                        }
+                    }
+
+
+                    if (canClick) {
+                        commands.add(new GridSelectCommand(i));
+                    }
+                }
+            }
+
+            if (isGridScreenConfirmAvailable()) {
+                commands.add(GridSelectConfrimCommand.INSTANCE);
             }
         }
+
+        if (isInCardRewardSelect()) {
+            for (int i = 0; i < AbstractDungeon.cardRewardScreen.rewardGroup.size(); i++) {
+                commands.add(new CardRewardSelectCommand(i));
+            }
+        }
+
 
         if (isEndCommandAvailable()) {
             commands.add(new EndCommand());
@@ -219,6 +265,13 @@ public final class CommandList {
                 AbstractDungeon.screen == AbstractDungeon.CurrentScreen.GRID;
     }
 
+    private static boolean isInCardRewardSelect() {
+        return isInDungeon() &&
+                AbstractDungeon.getCurrRoom().phase == AbstractRoom.RoomPhase.COMBAT &&
+                AbstractDungeon.isScreenUp &&
+                AbstractDungeon.screen == AbstractDungeon.CurrentScreen.CARD_REWARD;
+    }
+
     private static boolean isInHandSelect() {
         return isInDungeon() &&
                 AbstractDungeon.getCurrRoom().phase == AbstractRoom.RoomPhase.COMBAT &&
@@ -232,6 +285,17 @@ public final class CommandList {
                 .getPrivate(button, CardSelectConfirmButton.class, "isHidden");
         boolean isDisabled = button.isDisabled;
         return !(isHidden || isDisabled);
+    }
+
+    private static boolean isGridScreenConfirmAvailable() {
+        GridCardSelectScreen screen = AbstractDungeon.gridSelectScreen;
+        if (screen.confirmScreenUp || screen.isJustForConfirming) {
+            return true;
+        } else if ((!screen.confirmButton.isDisabled) && (!(boolean) ReflectionHacks
+                .getPrivate(screen.confirmButton, GridSelectConfirmButton.class, "isHidden"))) {
+            return screen.forUpgrade || screen.forTransform || screen.forPurge || screen.anyNumber;
+        }
+        return false;
     }
 
     private CommandList() {

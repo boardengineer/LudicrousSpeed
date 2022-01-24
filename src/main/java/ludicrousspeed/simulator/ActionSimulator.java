@@ -355,7 +355,6 @@ public class ActionSimulator {
         AbstractDungeon.player.applyEndOfTurnTriggers();
 
 
-
 //        if (AbstractDungeon.player.hasPower("Focus")) {
 //            AbstractDungeon.player.orbs.stream().filter(orb -> !(orb instanceof EmptyOrbSlot))
 //                                       .forEach(AbstractOrb::applyFocus);
@@ -398,7 +397,8 @@ public class ActionSimulator {
     }
 
     public static boolean shouldStepAiController() {
-        if (LudicrousSpeedMod.controller == null || LudicrousSpeedMod.controller.isDone() || LudicrousSpeedMod.mustRestart) {
+        if (LudicrousSpeedMod.controller == null || LudicrousSpeedMod.controller
+                .isDone() || LudicrousSpeedMod.mustRestart) {
             return false;
         }
 
@@ -416,7 +416,8 @@ public class ActionSimulator {
 
     public static boolean shouldWaitOnActions() {
         // Only freeze if the AI is pathing
-        if (LudicrousSpeedMod.controller == null || LudicrousSpeedMod.controller.isDone() || LudicrousSpeedMod.mustRestart) {
+        if (LudicrousSpeedMod.controller == null || LudicrousSpeedMod.controller
+                .isDone() || LudicrousSpeedMod.mustRestart) {
             return false;
         }
 

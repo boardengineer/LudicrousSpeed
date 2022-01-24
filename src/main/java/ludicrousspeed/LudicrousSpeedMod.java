@@ -72,7 +72,7 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber {
                 || (AbstractDungeon.actionManager.currentAction != null && AbstractDungeon.actionManager.phase == GameActionManager.Phase.EXECUTING_ACTIONS)
                 || !AbstractDungeon.actionManager.isEmpty()) {
             if (!(AbstractDungeon.isScreenUp
-                    && (AbstractDungeon.screen == AbstractDungeon.CurrentScreen.HAND_SELECT || AbstractDungeon.screen == AbstractDungeon.CurrentScreen.GRID))) {
+                    && (AbstractDungeon.screen == AbstractDungeon.CurrentScreen.HAND_SELECT || AbstractDungeon.screen == AbstractDungeon.CurrentScreen.GRID || AbstractDungeon.screen == AbstractDungeon.CurrentScreen.CARD_REWARD))) {
                 return false;
             }
         }
