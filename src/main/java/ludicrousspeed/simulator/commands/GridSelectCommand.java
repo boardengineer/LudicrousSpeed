@@ -51,6 +51,11 @@ public class GridSelectCommand implements Command {
 
         ignoreHoverLogic = true;
         AbstractDungeon.gridSelectScreen.update();
+
+        if (AbstractDungeon.gridSelectScreen.confirmScreenUp) {
+            AbstractDungeon.gridSelectScreen.confirmButton.hb.clicked = true;
+            AbstractDungeon.gridSelectScreen.update();
+        }
         ignoreHoverLogic = false;
 
         if (target.hb.clicked) {
