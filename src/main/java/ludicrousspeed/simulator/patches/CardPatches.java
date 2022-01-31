@@ -7,6 +7,7 @@ import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.GameActionManager;
 import com.megacrit.cardcrawl.actions.common.*;
 import com.megacrit.cardcrawl.actions.defect.ScrapeFollowUpAction;
+import com.megacrit.cardcrawl.actions.unique.ExhumeAction;
 import com.megacrit.cardcrawl.actions.utility.ShowCardAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.CardGroup;
@@ -133,6 +134,17 @@ public class CardPatches {
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = ExhumeAction.class,
+            method = "update"
+    )
+    public static class ClearPowersForExhumePatch {
+        @SpireInsertPatch(loc = 118)
+        public static void Prefix(ExhumeAction action) {
+            AbstractDungeon.gridSelectScreen.selectedCards.forEach(AbstractCard::clearPowers);
         }
     }
 
