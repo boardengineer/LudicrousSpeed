@@ -354,14 +354,6 @@ public class ActionSimulator {
     public static void roomEndTurn() {
         AbstractDungeon.player.applyEndOfTurnTriggers();
 
-
-//        if (AbstractDungeon.player.hasPower("Focus")) {
-//            AbstractDungeon.player.orbs.stream().filter(orb -> !(orb instanceof EmptyOrbSlot))
-//                                       .forEach(AbstractOrb::applyFocus);
-//        }
-//        AbstractDungeon.player.orbs.forEach(AbstractOrb::onEndOfTurn);
-//
-
         AbstractDungeon.actionManager.addToBottom(new ClearCardQueueAction());
         AbstractDungeon.actionManager.addToBottom(new DiscardAtEndOfTurnAction());
 

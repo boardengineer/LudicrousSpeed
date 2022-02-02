@@ -1,6 +1,9 @@
 package ludicrousspeed.simulator.patches;
 
 import basemod.ReflectionHacks;
+import com.evacipated.cardcrawl.mod.stslib.powers.interfaces.OnReceivePowerPower;
+import com.evacipated.cardcrawl.mod.stslib.relics.OnAnyPowerAppliedRelic;
+import com.evacipated.cardcrawl.mod.stslib.relics.OnReceivePowerRelic;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
@@ -15,6 +18,7 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.monsters.beyond.AwakenedOne;
 import com.megacrit.cardcrawl.powers.AbstractPower;
 import com.megacrit.cardcrawl.powers.NoDrawPower;
+import com.megacrit.cardcrawl.relics.AbstractRelic;
 import ludicrousspeed.LudicrousSpeedMod;
 
 import java.util.Collections;
@@ -43,67 +47,101 @@ public class PowerPatches {
             method = "update"
     )
     public static class FastApplyPowerActionPatch {
-        public static SpireReturn Prefix(ApplyPowerAction _instance) {
+        public static SpireReturn Prefix(ApplyPowerAction action) {
             if (LudicrousSpeedMod.plaidMode) {
-                _instance.isDone = true;
-                if (_instance.target != null && !_instance.target.isDeadOrEscaped()) {
+                action.isDone = true;
+                AbstractCreature target = action.target;
+                AbstractCreature source = action.source;
+                if (action.target != null && !target.isDeadOrEscaped()) {
                     AbstractPower powerToApply = ReflectionHacks
-                            .getPrivate(_instance, ApplyPowerAction.class, "powerToApply");
+                            .getPrivate(action, ApplyPowerAction.class, "powerToApply");
 
-                    if (powerToApply instanceof NoDrawPower && _instance.target
+                    if (powerToApply instanceof NoDrawPower && target
                             .hasPower(powerToApply.ID)) {
-                        _instance.isDone = true;
+                        action.isDone = true;
                         return SpireReturn.Return(null);
                     }
 
-                    if (_instance.source != null) {
-                        for (AbstractPower power : _instance.source.powers) {
-                            power.onApplyPower(powerToApply, _instance.target, _instance.source);
+                    if (action.source != null) {
+                        for (AbstractPower power : source.powers) {
+                            power.onApplyPower(powerToApply, target, source);
+                        }
+                    }
+
+
+                    if (target != null) {
+                        for (AbstractPower power : target.powers) {
+                            if (power instanceof OnReceivePowerPower) {
+                                // Allows changing the stackAmount
+                                action.amount = ((OnReceivePowerPower) power).onReceivePowerStacks(powerToApply, target, source, action.amount);
+                                // Allows negating the power
+                                ((OnReceivePowerPower) power).onReceivePower(powerToApply, target, source);
+                            }
+                        }
+
+                        if (target.isPlayer) {
+                            for (AbstractRelic relic : AbstractDungeon.player.relics) {
+                                if (relic instanceof OnReceivePowerRelic) {
+                                    // Allows changing the stackAmount
+                                    action.amount = ((OnReceivePowerRelic) relic).onReceivePowerStacks(powerToApply, source, action.amount);
+                                    // Allows negating the power
+                                    ((OnReceivePowerRelic) relic).onReceivePower(powerToApply, source);
+                                }
+                            }
+                        }
+
+                        for (AbstractRelic relic : AbstractDungeon.player.relics) {
+                            if (relic instanceof OnAnyPowerAppliedRelic) {
+                                // Allows changing the stackAmount
+                                action.amount = ((OnAnyPowerAppliedRelic) relic).onAnyPowerApplyStacks(powerToApply, target, source, action.amount);
+                                // Allows negating the power
+                                 ((OnAnyPowerAppliedRelic) relic).onAnyPowerApply(powerToApply, target, source);
+                            }
                         }
                     }
 
                     if (AbstractDungeon.player
-                            .hasRelic("Champion Belt") && _instance.source != null && _instance.source.isPlayer && _instance.target != _instance.source && powerToApply.ID
-                            .equals("Vulnerable") && !_instance.target.hasPower("Artifact")) {
+                            .hasRelic("Champion Belt") && action.source != null && action.source.isPlayer && action.target != action.source && powerToApply.ID
+                            .equals("Vulnerable") && !action.target.hasPower("Artifact")) {
                         AbstractDungeon.player.getRelic("Champion Belt")
-                                              .onTrigger(_instance.target);
+                                              .onTrigger(action.target);
                     }
 
-                    if (_instance.target instanceof AbstractMonster && _instance.target
+                    if (action.target instanceof AbstractMonster && action.target
                             .isDeadOrEscaped()) {
                         return SpireReturn.Return(null);
                     }
 
                     if (AbstractDungeon.player
-                            .hasRelic("Ginger") && _instance.target.isPlayer && powerToApply.ID
+                            .hasRelic("Ginger") && action.target.isPlayer && powerToApply.ID
                             .equals("Weakened")) {
                         return SpireReturn.Return(null);
                     }
 
                     if (AbstractDungeon.player
-                            .hasRelic("Turnip") && _instance.target.isPlayer && powerToApply.ID
+                            .hasRelic("Turnip") && action.target.isPlayer && powerToApply.ID
                             .equals("Frail")) {
                         return SpireReturn.Return(null);
                     }
 
-                    if (_instance.target
+                    if (action.target
                             .hasPower("Artifact") && powerToApply.type == AbstractPower.PowerType.DEBUFF) {
-                        _instance.target.getPower("Artifact").onSpecificTrigger();
+                        action.target.getPower("Artifact").onSpecificTrigger();
                         return SpireReturn.Return(null);
                     }
 
                     boolean hasBuffAlready = false;
-                    for (AbstractPower power : _instance.target.powers) {
+                    for (AbstractPower power : action.target.powers) {
                         if (power.ID.equals(powerToApply.ID) && !power.ID.equals("Night Terror")) {
-                            power.stackPower(_instance.amount);
+                            power.stackPower(action.amount);
                             hasBuffAlready = true;
                             AbstractDungeon.onModifyPower();
                         }
                     }
 
                     if (!hasBuffAlready) {
-                        _instance.target.powers.add(powerToApply);
-                        Collections.sort(_instance.target.powers);
+                        action.target.powers.add(powerToApply);
+                        Collections.sort(action.target.powers);
                         powerToApply.onInitialApplication();
 
                         AbstractDungeon.onModifyPower();
@@ -142,7 +180,7 @@ public class PowerPatches {
     public static class NoFlashClass {
         @SpirePrefixPatch
         public static SpireReturn noFlash(AbstractPower power) {
-            if(LudicrousSpeedMod.plaidMode) {
+            if (LudicrousSpeedMod.plaidMode) {
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();

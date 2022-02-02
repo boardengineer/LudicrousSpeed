@@ -1,7 +1,9 @@
 package ludicrousspeed.simulator.commands;
 
+import basemod.ReflectionHacks;
 import com.google.gson.JsonObject;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
+import com.megacrit.cardcrawl.screens.select.HandCardSelectScreen;
 
 public class HandSelectConfirmCommand implements Command {
     public static final HandSelectConfirmCommand INSTANCE = new HandSelectConfirmCommand();
@@ -11,8 +13,13 @@ public class HandSelectConfirmCommand implements Command {
 
     @Override
     public void execute() {
-        AbstractDungeon.handCardSelectScreen.button.hb.clicked = true;
-        AbstractDungeon.handCardSelectScreen.update();
+        HandCardSelectScreen screen = AbstractDungeon.handCardSelectScreen;
+
+        ReflectionHacks
+                .setPrivate(AbstractDungeon.handCardSelectScreen, HandCardSelectScreen.class, "hand", AbstractDungeon.player.hand);
+
+        screen.button.hb.clicked = true;
+        screen.update();
     }
 
     @Override
