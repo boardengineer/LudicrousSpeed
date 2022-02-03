@@ -1,4 +1,4 @@
-    package ludicrousspeed.simulator.patches;
+package ludicrousspeed.simulator.patches;
 
 import basemod.ReflectionHacks;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
@@ -74,6 +74,11 @@ public class DamageActionPatches {
                 for (int i = 0; i < monsters.size(); i++) {
                     AbstractMonster monster = monsters.get(i);
 
+                    if (_instance.damage == null) {
+                        int baseDamage = ReflectionHacks
+                                .getPrivate(_instance, DamageAllEnemiesAction.class, "baseDamage");
+                        _instance.damage = DamageInfo.createDamageMatrix(baseDamage);
+                    }
                     monster.damage(new DamageInfo(_instance.source, _instance.damage[i], _instance.damageType));
                 }
 
