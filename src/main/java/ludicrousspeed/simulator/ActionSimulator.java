@@ -1,6 +1,7 @@
 package ludicrousspeed.simulator;
 
 import basemod.BaseMod;
+import com.evacipated.cardcrawl.mod.stslib.powers.StunMonsterPower;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
 import com.megacrit.cardcrawl.actions.ClearCardQueueAction;
 import com.megacrit.cardcrawl.actions.GameActionManager;
@@ -244,7 +245,9 @@ public class ActionSimulator {
         } else if (!actionManager.monsterQueue.isEmpty()) {
             AbstractMonster m = actionManager.monsterQueue.get(0).monster;
             if (!m.isDeadOrEscaped() || m.halfDead) {
-                m.takeTurn();
+                if (!m.hasPower(StunMonsterPower.POWER_ID)) {
+                    m.takeTurn();
+                }
                 m.applyTurnPowers();
             }
             actionManager.monsterQueue.remove(0);
