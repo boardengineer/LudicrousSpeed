@@ -360,6 +360,7 @@ public class ActionSimulator {
         AbstractDungeon.actionManager.addToBottom(new ClearCardQueueAction());
         AbstractDungeon.actionManager.addToBottom(new DiscardAtEndOfTurnAction());
 
+        AbstractDungeon.player.exhaustPile.group.forEach(AbstractCard::resetAttributes);
         AbstractDungeon.player.drawPile.group.forEach(AbstractCard::resetAttributes);
         AbstractDungeon.player.discardPile.group.forEach(AbstractCard::resetAttributes);
         AbstractDungeon.player.hand.group.forEach(AbstractCard::resetAttributes);
@@ -386,7 +387,12 @@ public class ActionSimulator {
 
             if (AbstractDungeon.getMonsters().areMonstersDead() && !AbstractDungeon
                     .getCurrRoom().isBattleOver && !AbstractDungeon.getCurrRoom().cannotLose) {
-                AbstractDungeon.getCurrRoom().endBattle();
+
+                try {
+                    AbstractDungeon.getCurrRoom().endBattle();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }

@@ -95,7 +95,7 @@ public class PowerPatches {
                                 // Allows changing the stackAmount
                                 action.amount = ((OnAnyPowerAppliedRelic) relic).onAnyPowerApplyStacks(powerToApply, target, source, action.amount);
                                 // Allows negating the power
-                                 ((OnAnyPowerAppliedRelic) relic).onAnyPowerApply(powerToApply, target, source);
+                                ((OnAnyPowerAppliedRelic) relic).onAnyPowerApply(powerToApply, target, source);
                             }
                         }
                     }

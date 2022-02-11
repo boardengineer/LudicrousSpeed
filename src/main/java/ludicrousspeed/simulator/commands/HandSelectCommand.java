@@ -31,6 +31,7 @@ public class HandSelectCommand implements Command {
 //            makeHandSelectScreenChoice(cardIndex);
 //        } else {
 //
+
         AbstractDungeon.handCardSelectScreen.hoveredCard = AbstractDungeon.player.hand.group
                 .get(cardIndex);
 
