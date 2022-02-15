@@ -1,12 +1,9 @@
 package ludicrousspeed.simulator.commands;
 
 import basemod.ReflectionHacks;
-import com.megacrit.cardcrawl.actions.common.DiscardAction;
-import com.megacrit.cardcrawl.actions.common.ExhaustAction;
 import com.megacrit.cardcrawl.actions.utility.ScryAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.curses.Clumsy;
-import com.megacrit.cardcrawl.cards.red.TwinStrike;
 import com.megacrit.cardcrawl.cards.status.Dazed;
 import com.megacrit.cardcrawl.cards.status.VoidCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
@@ -29,7 +26,12 @@ public final class CommandList {
         return getAvailableCommands(null);
     }
 
-    public static List<Command> getAvailableCommands(Comparator<AbstractCard> cardComparator) {
+
+    public static List<Command> getAvailableCommands(Comparator<AbstractCard> playHeuristic) {
+        return getAvailableCommands(playHeuristic, new HashMap<>());
+    }
+
+    public static List<Command> getAvailableCommands(Comparator<AbstractCard> cardComparator, HashMap<Class, Comparator<AbstractCard>> actionHeuristics) {
         List<Command> commands = new ArrayList<>();
         AbstractPlayer player = AbstractDungeon.player;
         List<AbstractCard> hand = player.hand.group;
@@ -107,8 +109,6 @@ public final class CommandList {
                     continue;
                 }
 
-                TwinStrike twinStrike;
-
                 if (potion.targetRequired) {
                     for (int j = 0; j < monsters.size(); j++) {
                         AbstractMonster monster = monsters.get(j);
@@ -127,7 +127,8 @@ public final class CommandList {
                     .size() < AbstractDungeon.handCardSelectScreen.numCardsToSelect) {
 
                 ArrayList<Integer> orderedIndeces = new ArrayList<>();
-                if (AbstractDungeon.actionManager.currentAction instanceof DiscardAction) {
+
+                if (actionHeuristics.containsKey(AbstractDungeon.actionManager.currentAction)) {
                     HashMap<Integer, AbstractCard> indexToCardMap = new HashMap<>();
 
                     for (int i = 0; i < AbstractDungeon.player.hand.group.size(); i++) {
@@ -135,44 +136,11 @@ public final class CommandList {
                     }
 
                     indexToCardMap.entrySet().stream().sorted((e1, e2) -> {
-                        AbstractCard card1 = e1.getValue();
-                        AbstractCard card2 = e2.getValue();
+                        Comparator<AbstractCard> heuristic = actionHeuristics
+                                .get(AbstractDungeon.actionManager.currentAction);
+                        return heuristic.compare(e1.getValue(), e2.getValue());
+                    }).forEach(entry -> orderedIndeces.add(entry.getKey()));
 
-                        if (DiscardOrder.CARD_RANKS
-                                .containsKey(card1.cardID) && DiscardOrder.CARD_RANKS
-                                .containsKey(card2.cardID)) {
-                            return DiscardOrder.CARD_RANKS
-                                    .get(card1.cardID) - DiscardOrder.CARD_RANKS.get(card2.cardID);
-                        } else if (DiscardOrder.CARD_RANKS.containsKey(card1.cardID)) {
-                            return 1;
-                        }
-
-                        return 0;
-                    })
-                                  .forEach(entry -> orderedIndeces.add(entry.getKey()));
-                } else if (AbstractDungeon.actionManager.currentAction instanceof ExhaustAction) {
-                    HashMap<Integer, AbstractCard> indexToCardMap = new HashMap<>();
-
-                    for (int i = 0; i < AbstractDungeon.player.hand.group.size(); i++) {
-                        indexToCardMap.put(i, AbstractDungeon.player.hand.group.get(i));
-                    }
-
-                    indexToCardMap.entrySet().stream().sorted((e1, e2) -> {
-                        AbstractCard card1 = e1.getValue();
-                        AbstractCard card2 = e2.getValue();
-
-                        if (ExhaustOrder.CARD_RANKS
-                                .containsKey(card1.cardID) && ExhaustOrder.CARD_RANKS
-                                .containsKey(card2.cardID)) {
-                            return ExhaustOrder.CARD_RANKS
-                                    .get(card1.cardID) - ExhaustOrder.CARD_RANKS.get(card2.cardID);
-                        } else if (ExhaustOrder.CARD_RANKS.containsKey(card1.cardID)) {
-                            return 1;
-                        }
-
-                        return 0;
-                    })
-                                  .forEach(entry -> orderedIndeces.add(entry.getKey()));
                 } else {
                     for (int i = 0; i < AbstractDungeon.player.hand.group.size(); i++) {
                         orderedIndeces.add(i);
