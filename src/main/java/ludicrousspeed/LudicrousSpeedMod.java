@@ -5,6 +5,8 @@ import com.megacrit.cardcrawl.actions.GameActionManager;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
+import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
+import com.megacrit.cardcrawl.vfx.cardManip.ExhaustCardEffect;
 import ludicrousspeed.simulator.ActionSimulator;
 
 public class LudicrousSpeedMod implements PreUpdateSubscriber {
@@ -27,7 +29,19 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber {
             if (LudicrousSpeedMod.plaidMode) {
                 ActionSimulator.actionLoop();
             } else if (shouldNormalUpdate()) {
-                controller.step();
+                // You can get around some exhaust resets by playing to fast, wait for all exhausts
+                // to finish to make sure this doesn't happen.
+                boolean stillExhausting = false;
+                for (AbstractGameEffect effect : AbstractDungeon.effectList) {
+                    if (effect instanceof ExhaustCardEffect) {
+                        stillExhausting = true;
+                        break;
+                    }
+                }
+
+                if (!stillExhausting) {
+                    controller.step();
+                }
             }
         }
     }
