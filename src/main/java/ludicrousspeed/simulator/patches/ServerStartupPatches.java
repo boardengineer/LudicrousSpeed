@@ -13,9 +13,18 @@ import com.megacrit.cardcrawl.dungeons.Exordium;
 import com.megacrit.cardcrawl.rooms.EmptyRoom;
 import ludicrousspeed.LudicrousSpeedMod;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 
 public class ServerStartupPatches {
+    private static final String HOST_IP = "127.0.0.1";
+    private static final int SERVER_GAME_PORT = 5124;
+
     @SpirePatch(clz = CardCrawlGame.class, method = "create")
     public static class GameStartupPatch {
         @SpirePostfixPatch
@@ -34,6 +43,7 @@ public class ServerStartupPatches {
                 CardCrawlGame.dungeon.currMapNode.room = new EmptyRoom();
 
                 CardCrawlGame.mode = CardCrawlGame.GameMode.GAMEPLAY;
+                sendSuccessToController();
             }
         }
     }
@@ -60,5 +70,23 @@ public class ServerStartupPatches {
 
             return SpireReturn.Continue();
         }
+    }
+
+    private static void sendSuccessToController() {
+        new Thread(() -> {
+            try {
+                Thread.sleep(5_000);
+                Socket socket;
+                socket = new Socket();
+                System.out.println("Attempting to connect");
+                socket.connect(new InetSocketAddress(HOST_IP, SERVER_GAME_PORT));
+                System.out.println("sending success from server game");
+                new DataOutputStream(socket.getOutputStream()).writeUTF("SUCCESS");
+                DataInputStream in = new DataInputStream(new BufferedInputStream(socket
+                        .getInputStream()));
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }

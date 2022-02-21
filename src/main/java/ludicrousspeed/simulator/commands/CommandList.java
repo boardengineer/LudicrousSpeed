@@ -128,7 +128,7 @@ public final class CommandList {
 
                 ArrayList<Integer> orderedIndeces = new ArrayList<>();
 
-                if (actionHeuristics.containsKey(AbstractDungeon.actionManager.currentAction)) {
+                if (actionHeuristics.containsKey(AbstractDungeon.actionManager.currentAction.getClass())) {
                     HashMap<Integer, AbstractCard> indexToCardMap = new HashMap<>();
 
                     for (int i = 0; i < AbstractDungeon.player.hand.group.size(); i++) {
@@ -137,7 +137,7 @@ public final class CommandList {
 
                     indexToCardMap.entrySet().stream().sorted((e1, e2) -> {
                         Comparator<AbstractCard> heuristic = actionHeuristics
-                                .get(AbstractDungeon.actionManager.currentAction);
+                                .get(AbstractDungeon.actionManager.currentAction.getClass());
                         return heuristic.compare(e1.getValue(), e2.getValue());
                     }).forEach(entry -> orderedIndeces.add(entry.getKey()));
 

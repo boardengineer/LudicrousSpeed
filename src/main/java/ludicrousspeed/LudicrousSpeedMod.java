@@ -29,19 +29,7 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber {
             if (LudicrousSpeedMod.plaidMode) {
                 ActionSimulator.actionLoop();
             } else if (shouldNormalUpdate()) {
-                // You can get around some exhaust resets by playing to fast, wait for all exhausts
-                // to finish to make sure this doesn't happen.
-                boolean stillExhausting = false;
-                for (AbstractGameEffect effect : AbstractDungeon.effectList) {
-                    if (effect instanceof ExhaustCardEffect) {
-                        stillExhausting = true;
-                        break;
-                    }
-                }
-
-                if (!stillExhausting) {
-                    controller.step();
-                }
+                controller.step();
             }
         }
     }
@@ -77,6 +65,13 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber {
 
         if (plaidMode) {
             return false;
+        }
+
+        // Wait for exhaust effects to finish so they don't come back to haunt us.
+        for (AbstractGameEffect effect : AbstractDungeon.effectList) {
+            if (effect instanceof ExhaustCardEffect) {
+                return false;
+            }
         }
 
         /**
