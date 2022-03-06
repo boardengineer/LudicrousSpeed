@@ -1,18 +1,15 @@
 package ludicrousspeed;
 
-import basemod.interfaces.EditCardsSubscriber;
 import basemod.interfaces.PreUpdateSubscriber;
 import com.megacrit.cardcrawl.actions.GameActionManager;
-import com.megacrit.cardcrawl.cards.tempCards.Shiv;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
 import com.megacrit.cardcrawl.vfx.cardManip.ExhaustCardEffect;
 import ludicrousspeed.simulator.ActionSimulator;
-import ludicrousspeed.simulator.patches.CardPreviewInConstructorPatches;
 
-public class LudicrousSpeedMod implements PreUpdateSubscriber, EditCardsSubscriber {
+public class LudicrousSpeedMod implements PreUpdateSubscriber {
     /**
      * Set this controller to your own custom logic
      */
@@ -94,10 +91,5 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber, EditCardsSubscrib
 
     private static boolean playerUsingHandSelect() {
         return AbstractDungeon.isScreenUp && AbstractDungeon.screen == AbstractDungeon.CurrentScreen.HAND_SELECT;
-    }
-
-    @Override
-    public void receiveEditCards() {
-        CardPreviewInConstructorPatches.previewCard = new Shiv();
     }
 }
