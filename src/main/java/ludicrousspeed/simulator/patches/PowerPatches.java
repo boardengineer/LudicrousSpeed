@@ -16,12 +16,15 @@ import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.monsters.beyond.AwakenedOne;
+import com.megacrit.cardcrawl.orbs.AbstractOrb;
 import com.megacrit.cardcrawl.powers.AbstractPower;
 import com.megacrit.cardcrawl.powers.NoDrawPower;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import ludicrousspeed.LudicrousSpeedMod;
 
 import java.util.Collections;
+
+import static savestate.SaveStateMod.shouldGoFast;
 
 public class PowerPatches {
     @SpirePatch(
@@ -209,6 +212,31 @@ public class PowerPatches {
             if (LudicrousSpeedMod.plaidMode) {
                 awakenedOne.powers.forEach(p -> p.updateDescription());
             }
+        }
+    }
+
+
+    @SpirePatch(clz = AbstractDungeon.class, method = "onModifyPower")
+    public static class OnModifyPowerPatch {
+        @SpirePrefixPatch
+        public static SpireReturn doNothing() {
+            if (shouldGoFast) {
+                if (AbstractDungeon.player != null) {
+                    AbstractDungeon.player.hand.applyPowers();
+                    if (AbstractDungeon.player.hasPower("Focus")) {
+                        AbstractDungeon.player.orbs.stream().filter(orb -> orb.ID != null)
+                                                   .forEach(AbstractOrb::applyFocus);
+                    }
+                }
+
+                if (AbstractDungeon.getCurrRoom().monsters != null) {
+                    AbstractDungeon.getCurrRoom().monsters.monsters
+                            .forEach(AbstractMonster::applyPowers);
+                }
+
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
         }
     }
 }

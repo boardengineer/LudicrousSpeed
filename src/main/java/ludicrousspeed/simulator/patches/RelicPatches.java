@@ -123,7 +123,6 @@ public class RelicPatches {
         @SpirePrefixPatch
         public static SpireReturn noLoad(String imgUrl) {
             if (LudicrousSpeedMod.plaidMode) {
-//                System.err.println("sanity this is happening");
                 return SpireReturn.Return(ImageMaster.BOSS_CHEST_OPEN);
             }
 //            System.err.println("sanity this is happening");

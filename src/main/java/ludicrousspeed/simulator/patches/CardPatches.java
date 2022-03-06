@@ -1,6 +1,9 @@
 package ludicrousspeed.simulator.patches;
 
 import basemod.ReflectionHacks;
+import basemod.abstracts.AbstractCardModifier;
+import basemod.abstracts.CustomCard;
+import basemod.helpers.CardModifierManager;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.*;
 import com.megacrit.cardcrawl.actions.AbstractGameAction;
@@ -21,44 +24,15 @@ import com.megacrit.cardcrawl.screens.select.GridCardSelectScreen;
 import com.megacrit.cardcrawl.vfx.cardManip.ShowCardAndAddToDiscardEffect;
 import com.megacrit.cardcrawl.vfx.cardManip.ShowCardAndAddToHandEffect;
 import ludicrousspeed.LudicrousSpeedMod;
+import savestate.SaveStateMod;
 
+import java.util.Iterator;
 import java.util.UUID;
 
+import static savestate.SaveStateMod.addRuntime;
+import static savestate.SaveStateMod.shouldGoFast;
+
 public class CardPatches {
-    // Turn off Image loading from the constructor, it's slow.
-    @SpirePatch(
-            clz = AbstractCard.class,
-            paramtypez = {String.class, String.class, String.class, int.class, String.class, AbstractCard.CardType.class, AbstractCard.CardColor.class, AbstractCard.CardRarity.class, AbstractCard.CardTarget.class, DamageInfo.DamageType.class},
-            method = SpirePatch.CONSTRUCTOR
-    )
-    public static class FastCardConstructorPatch {
-        @SpireInsertPatch(loc = 391)
-        public static SpireReturn Insert(AbstractCard _instance, String id, String name, String imgUrl, int cost, String rawDescription, AbstractCard.CardType type, AbstractCard.CardColor color, AbstractCard.CardRarity rarity, AbstractCard.CardTarget target, DamageInfo.DamageType dType) {
-            if (LudicrousSpeedMod.plaidMode) {
-                _instance.originalName = name;
-                _instance.name = name;
-                _instance.cardID = id;
-                _instance.assetUrl = imgUrl;
-                _instance.cost = cost;
-                _instance.costForTurn = cost;
-                _instance.rawDescription = rawDescription;
-                _instance.type = type;
-                _instance.color = color;
-                _instance.rarity = rarity;
-                _instance.target = target;
-                _instance.block = -1;
-
-                ReflectionHacks.setPrivate(_instance, AbstractCard.class, "damageType", dType);
-                _instance.damageTypeForTurn = dType;
-                _instance.uuid = UUID.randomUUID();
-
-                return SpireReturn.Return(null);
-
-            }
-            return SpireReturn.Continue();
-        }
-    }
-
     // Fast Mode doesn't load images which will NPE when trying to render, turn off rendering
     // in fast mode.
     @SpirePatch(
@@ -225,16 +199,17 @@ public class CardPatches {
         }
     }
 
-    /*
     @SpirePatch(
             clz = AbstractCard.class,
             paramtypez = {},
             method = "makeStatEquivalentCopy"
     )
     public static class UseCardPoolForRandomCreationPatch {
+        @SpirePrefixPatch
         public static SpireReturn Prefix(AbstractCard _instance) {
             if (LudicrousSpeedMod.plaidMode) {
-                AbstractCard card = CardState.getCard(_instance.cardID);
+                AbstractCard card = _instance.makeCopy();
+
                 for (int i = 0; i < _instance.timesUpgraded; ++i) {
                     card.upgrade();
                 }
@@ -246,6 +221,7 @@ public class CardPatches {
                 card.baseDamage = _instance.baseDamage;
                 card.baseBlock = _instance.baseBlock;
                 card.baseMagicNumber = _instance.baseMagicNumber;
+                card.magicNumber = _instance.magicNumber;
                 card.cost = _instance.cost;
                 card.costForTurn = _instance.costForTurn;
                 card.isCostModified = _instance.isCostModified;
@@ -263,8 +239,6 @@ public class CardPatches {
             return SpireReturn.Continue();
         }
     }
-
-     */
 
     @SpirePatch(
             clz = AbstractCard.class,
@@ -346,7 +320,34 @@ public class CardPatches {
             method = SpirePatch.CONSTRUCTOR
     )
     public static class ShowCardAndAddToHandEffectPatch {
+        @SpirePrefixPatch
         public static SpireReturn Prefix(ShowCardAndAddToHandEffect _instance, AbstractCard card) {
+            if (LudicrousSpeedMod.plaidMode) {
+                if (card == null) {
+                    throw new IllegalStateException("Card Is null, Nothing to return ");
+                }
+
+                if (card.type != AbstractCard.CardType.CURSE && card.type != AbstractCard.CardType.STATUS && AbstractDungeon.player
+                        .hasPower("MasterRealityPower")) {
+                    card.upgrade();
+                }
+
+                AbstractDungeon.player.hand.addToTop(card);
+
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = ShowCardAndAddToHandEffect.class,
+            paramtypez = {AbstractCard.class, float.class, float.class},
+            method = SpirePatch.CONSTRUCTOR
+    )
+    public static class ShowCardAndAddToHandEffectPatchTwo {
+        @SpirePrefixPatch
+        public static SpireReturn Prefix(ShowCardAndAddToHandEffect _instance, AbstractCard card, float x, float y) {
             if (LudicrousSpeedMod.plaidMode) {
                 if (card == null) {
                     throw new IllegalStateException("Card Is null, Nothing to return ");
@@ -388,7 +389,6 @@ public class CardPatches {
                     }
                 }
 
-
                 return SpireReturn.Return(result);
             }
             return SpireReturn.Continue();
@@ -411,6 +411,11 @@ public class CardPatches {
                         if (card == null) {
                             System.err.println("card was null, retrying...");
                         }
+                    }
+
+                    if (card.type != AbstractCard.CardType.CURSE && card.type != AbstractCard.CardType.STATUS && AbstractDungeon.player
+                            .hasPower("MasterRealityPower")) {
+                        card.upgrade();
                     }
 
                     AbstractDungeon.player.hand.addToHand(card);
@@ -672,6 +677,81 @@ public class CardPatches {
                     action.isDone = false;
                 }
             }
+        }
+    }
+
+    @SpirePatch(clz = CardModifierManager.class, method = "removeEndOfTurnModifiers")
+    public static class OptimizaCardModifierManagerPatch {
+        @SpirePrefixPatch
+        public static SpireReturn patchedRemove(AbstractCard card) {
+            Iterator it = CardModifierManager.modifiers(card).iterator();
+
+            while (it.hasNext()) {
+                AbstractCardModifier mod = (AbstractCardModifier) it.next();
+                if (mod.removeAtEndOfTurn(card)) {
+                    it.remove();
+                    mod.onRemove(card);
+                }
+            }
+
+            if (!LudicrousSpeedMod.plaidMode) {
+                card.initializeDescription();
+            }
+
+            return SpireReturn.Return(null);
+        }
+    }
+
+    // Turn off Image loading from the constructor, it's slow.
+    @SpirePatch(
+            clz = AbstractCard.class,
+            paramtypez = {String.class, String.class, String.class, int.class, String.class, AbstractCard.CardType.class, AbstractCard.CardColor.class, AbstractCard.CardRarity.class, AbstractCard.CardTarget.class, DamageInfo.DamageType.class},
+            method = SpirePatch.CONSTRUCTOR
+    )
+    public static class FastCardConstructorPatch {
+        private static long start = 0;
+        static long uuId = 0;
+
+        @SpireInsertPatch(loc = 366)
+        public static SpireReturn Insert(AbstractCard _instance, String id, String name, String imgUrl, int cost, String rawDescription, AbstractCard.CardType type, AbstractCard.CardColor color, AbstractCard.CardRarity rarity, AbstractCard.CardTarget target, DamageInfo.DamageType dType) {
+            if (SaveStateMod.shouldGoFast) {
+                start = System.currentTimeMillis();
+                _instance.originalName = name;
+                _instance.name = name;
+                _instance.cardID = id;
+                _instance.assetUrl = imgUrl;
+                _instance.cost = cost;
+                _instance.costForTurn = cost;
+                _instance.rawDescription = rawDescription;
+                _instance.type = type;
+                _instance.color = color;
+                _instance.rarity = rarity;
+                _instance.target = target;
+                _instance.block = -1;
+
+                ReflectionHacks.setPrivate(_instance, AbstractCard.class, "damageType", dType);
+                _instance.damageTypeForTurn = dType;
+
+                _instance.uuid = new UUID(0, uuId++);
+
+                addRuntime("abstract card constructor internal", System
+                        .currentTimeMillis() - start);
+                return SpireReturn.Return(null);
+
+            }
+
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(clz = CustomCard.class, method = "loadCardImage")
+    public static class classNoLoadCardImagePatc {
+        @SpirePrefixPatch
+        public static SpireReturn doNothing(CustomCard card, String img) {
+            if (shouldGoFast) {
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
         }
     }
 }
