@@ -17,6 +17,7 @@ import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.monsters.beyond.AwakenedOne;
 import com.megacrit.cardcrawl.orbs.AbstractOrb;
+import com.megacrit.cardcrawl.orbs.EmptyOrbSlot;
 import com.megacrit.cardcrawl.powers.AbstractPower;
 import com.megacrit.cardcrawl.powers.NoDrawPower;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
@@ -76,9 +77,11 @@ public class PowerPatches {
                         for (AbstractPower power : target.powers) {
                             if (power instanceof OnReceivePowerPower) {
                                 // Allows changing the stackAmount
-                                action.amount = ((OnReceivePowerPower) power).onReceivePowerStacks(powerToApply, target, source, action.amount);
+                                action.amount = ((OnReceivePowerPower) power)
+                                        .onReceivePowerStacks(powerToApply, target, source, action.amount);
                                 // Allows negating the power
-                                ((OnReceivePowerPower) power).onReceivePower(powerToApply, target, source);
+                                ((OnReceivePowerPower) power)
+                                        .onReceivePower(powerToApply, target, source);
                             }
                         }
 
@@ -86,9 +89,11 @@ public class PowerPatches {
                             for (AbstractRelic relic : AbstractDungeon.player.relics) {
                                 if (relic instanceof OnReceivePowerRelic) {
                                     // Allows changing the stackAmount
-                                    action.amount = ((OnReceivePowerRelic) relic).onReceivePowerStacks(powerToApply, source, action.amount);
+                                    action.amount = ((OnReceivePowerRelic) relic)
+                                            .onReceivePowerStacks(powerToApply, source, action.amount);
                                     // Allows negating the power
-                                    ((OnReceivePowerRelic) relic).onReceivePower(powerToApply, source);
+                                    ((OnReceivePowerRelic) relic)
+                                            .onReceivePower(powerToApply, source);
                                 }
                             }
                         }
@@ -96,9 +101,11 @@ public class PowerPatches {
                         for (AbstractRelic relic : AbstractDungeon.player.relics) {
                             if (relic instanceof OnAnyPowerAppliedRelic) {
                                 // Allows changing the stackAmount
-                                action.amount = ((OnAnyPowerAppliedRelic) relic).onAnyPowerApplyStacks(powerToApply, target, source, action.amount);
+                                action.amount = ((OnAnyPowerAppliedRelic) relic)
+                                        .onAnyPowerApplyStacks(powerToApply, target, source, action.amount);
                                 // Allows negating the power
-                                ((OnAnyPowerAppliedRelic) relic).onAnyPowerApply(powerToApply, target, source);
+                                ((OnAnyPowerAppliedRelic) relic)
+                                        .onAnyPowerApply(powerToApply, target, source);
                             }
                         }
                     }
@@ -224,7 +231,12 @@ public class PowerPatches {
                 if (AbstractDungeon.player != null) {
                     AbstractDungeon.player.hand.applyPowers();
                     if (AbstractDungeon.player.hasPower("Focus")) {
-                        AbstractDungeon.player.orbs.stream().filter(orb -> orb.ID != null)
+
+                        // This replaced an updateDescription call with applyFocus since most orbs
+                        // apply focus as part of the description call  but the bulk needs to be
+                        // optimized away
+                        AbstractDungeon.player.orbs.stream()
+                                                   .filter(orb -> orb.ID != null && !(orb instanceof EmptyOrbSlot))
                                                    .forEach(AbstractOrb::applyFocus);
                     }
                 }
