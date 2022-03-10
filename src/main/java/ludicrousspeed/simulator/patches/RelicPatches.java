@@ -5,6 +5,7 @@ import com.evacipated.cardcrawl.modthespire.lib.SpireInsertPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
+import com.megacrit.cardcrawl.actions.common.ApplyPowerToRandomEnemyAction;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.helpers.ImageMaster;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
@@ -13,6 +14,7 @@ import com.megacrit.cardcrawl.relics.BottledFlame;
 import com.megacrit.cardcrawl.relics.GremlinHorn;
 import com.megacrit.cardcrawl.vfx.RelicAboveCreatureEffect;
 import ludicrousspeed.LudicrousSpeedMod;
+import relicstats.patches.relics.TheSpecimenInfo;
 
 import java.util.ArrayList;
 
@@ -126,6 +128,17 @@ public class RelicPatches {
                 return SpireReturn.Return(ImageMaster.BOSS_CHEST_OPEN);
             }
 //            System.err.println("sanity this is happening");
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(clz = TheSpecimenInfo.ApplyPowerPatch.class, method = "postfix", optional = true, requiredModId = "RelicStats")
+    public static class NoUpdateNullSpecimenPatch {
+        @SpirePrefixPatch
+        public static SpireReturn checkForNulls(ApplyPowerToRandomEnemyAction _instance) {
+            if (_instance == null) {
+                return SpireReturn.Return(null);
+            }
             return SpireReturn.Continue();
         }
     }
