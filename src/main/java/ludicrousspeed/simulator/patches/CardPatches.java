@@ -278,27 +278,6 @@ public class CardPatches {
         }
     }
 
-    @SpirePatch(
-            clz = ShowCardAndAddToDiscardEffect.class,
-            paramtypez = {AbstractCard.class},
-            method = SpirePatch.CONSTRUCTOR
-    )
-    public static class ShowCardAndAddToDiscardEffectPatch {
-        public static SpireReturn Prefix(ShowCardAndAddToDiscardEffect _instance, AbstractCard card) {
-            if (LudicrousSpeedMod.plaidMode) {
-                if (card.type != AbstractCard.CardType.CURSE && card.type != AbstractCard.CardType.STATUS && AbstractDungeon.player
-                        .hasPower("MasterRealityPower")) {
-                    card.upgrade();
-                }
-
-                AbstractDungeon.player.discardPile.addToTop(card);
-
-                return SpireReturn.Return(null);
-            }
-            return SpireReturn.Continue();
-        }
-    }
-
 
     @SpirePatch(
             clz = ShowCardAndAddToDiscardEffect.class,
@@ -308,32 +287,6 @@ public class CardPatches {
     public static class ShowCardAndAddToDiscardEffectNoUpdatePatch {
         public static SpireReturn Prefix(ShowCardAndAddToDiscardEffect _instance) {
             if (LudicrousSpeedMod.plaidMode) {
-                return SpireReturn.Return(null);
-            }
-            return SpireReturn.Continue();
-        }
-    }
-
-    @SpirePatch(
-            clz = ShowCardAndAddToHandEffect.class,
-            paramtypez = {AbstractCard.class},
-            method = SpirePatch.CONSTRUCTOR
-    )
-    public static class ShowCardAndAddToHandEffectPatch {
-        @SpirePrefixPatch
-        public static SpireReturn Prefix(ShowCardAndAddToHandEffect _instance, AbstractCard card) {
-            if (LudicrousSpeedMod.plaidMode) {
-                if (card == null) {
-                    throw new IllegalStateException("Card Is null, Nothing to return ");
-                }
-
-                if (card.type != AbstractCard.CardType.CURSE && card.type != AbstractCard.CardType.STATUS && AbstractDungeon.player
-                        .hasPower("MasterRealityPower")) {
-                    card.upgrade();
-                }
-
-                AbstractDungeon.player.hand.addToTop(card);
-
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();
