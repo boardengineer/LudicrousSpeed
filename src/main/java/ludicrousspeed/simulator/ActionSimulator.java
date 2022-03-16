@@ -374,7 +374,7 @@ public class ActionSimulator {
     }
 
     public static void updateMonsters() {
-        AbstractDungeon.getCurrRoom().monsters.monsters.forEach(monster -> {
+        for (AbstractMonster monster : AbstractDungeon.getCurrRoom().monsters.monsters) {
             if (monster.isDying) {
                 monster.isDead = true;
                 monster.dispose();
@@ -394,7 +394,7 @@ public class ActionSimulator {
                     e.printStackTrace();
                 }
             }
-        });
+        }
     }
 
     public static boolean shouldStepAiController() {
