@@ -19,6 +19,7 @@ import com.megacrit.cardcrawl.ui.buttons.GridSelectConfirmButton;
 import savestate.PotionState;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class CommandList {
@@ -47,51 +48,49 @@ public final class CommandList {
                 cardIndeces.put(hand.get(i), i);
             }
 
-            Stream<Map.Entry<AbstractCard, Integer>> cardStream = cardIndeces.entrySet().stream();
+            Stream<Map.Entry<AbstractCard, Integer>> cardStream = cardIndeces.entrySet().parallelStream();
 
             if (cardComparator != null) {
                 cardStream = cardStream.sorted((card1, card2) -> cardComparator
                         .compare(card1.getKey(), card2.getKey()));
             }
 
-            cardStream.forEach(
-                    cardEntry -> {
-                        AbstractCard card = cardEntry.getKey();
+            for (Map.Entry<AbstractCard, Integer> cardEntry : cardStream.collect(Collectors.toList())) {
+                AbstractCard card = cardEntry.getKey();
 
-                        // Only populate the first time you've seen a card with this specific {name X upgraded}
-                        String setName = card.name + (card.upgraded ? "+" : "");
-                        int oldCount = seenCommands.size();
-                        seenCommands.add(setName);
-                        if (oldCount == seenCommands.size()) {
-                            return;
+                // Only populate the first time you've seen a card with this specific {name X upgraded}
+                String setName = card.name + (card.upgraded ? "+" : "");
+                int oldCount = seenCommands.size();
+                seenCommands.add(setName);
+                if (oldCount == seenCommands.size()) {
+                    continue;
+                }
+
+                if (card.target == AbstractCard.CardTarget.ENEMY || card.target == AbstractCard.CardTarget.SELF_AND_ENEMY) {
+                    for (int j = 0; j < monsters.size(); j++) {
+                        AbstractMonster monster = monsters.get(j);
+                        if (card.canUse(player, monster) && !monster.isDeadOrEscaped()) {
+                            commands.add(new CardCommand(cardEntry.getValue(), j, String
+                                    .format(card.cardID)));
                         }
-
-                        if (card.target == AbstractCard.CardTarget.ENEMY || card.target == AbstractCard.CardTarget.SELF_AND_ENEMY) {
-                            for (int j = 0; j < monsters.size(); j++) {
-                                AbstractMonster monster = monsters.get(j);
-                                if (card.canUse(player, monster) && !monster.isDeadOrEscaped()) {
-                                    commands.add(new CardCommand(cardEntry.getValue(), j, String
-                                            .format(card.cardID)));
-                                }
-                            }
-                        }
-
-                        if (card.target == AbstractCard.CardTarget.ALL_ENEMY || card.target == AbstractCard.CardTarget.ALL) {
-                            if (card.canUse(player, null)) {
-                                commands.add(new CardCommand(cardEntry
-                                        .getValue(), card.cardID));
-                            }
-                        }
-
-                        if (card.target == AbstractCard.CardTarget.SELF || card.target == AbstractCard.CardTarget.SELF_AND_ENEMY || card.target == AbstractCard.CardTarget.NONE) {
-                            if (card.canUse(player, null)) {
-                                commands.add(new CardCommand(cardEntry
-                                        .getValue(), card.cardID));
-                            }
-                        }
-
                     }
-            );
+                }
+
+                if (card.target == AbstractCard.CardTarget.ALL_ENEMY || card.target == AbstractCard.CardTarget.ALL) {
+                    if (card.canUse(player, null)) {
+                        commands.add(new CardCommand(cardEntry
+                                .getValue(), card.cardID));
+                    }
+                }
+
+                if (card.target == AbstractCard.CardTarget.SELF || card.target == AbstractCard.CardTarget.SELF_AND_ENEMY || card.target == AbstractCard.CardTarget.NONE) {
+                    if (card.canUse(player, null)) {
+                        commands.add(new CardCommand(cardEntry
+                                .getValue(), card.cardID));
+                    }
+                }
+
+            }
 
             for (int i = 0; i < potions.size(); i++) {
                 AbstractPotion potion = potions.get(i);
@@ -135,11 +134,16 @@ public final class CommandList {
                         indexToCardMap.put(i, AbstractDungeon.player.hand.group.get(i));
                     }
 
-                    indexToCardMap.entrySet().stream().sorted((e1, e2) -> {
+                    List<Map.Entry<Integer, AbstractCard>> toSort = new ArrayList<>();
+                    toSort.addAll(indexToCardMap.entrySet());
+                    toSort.sort((e1, e2) -> {
                         Comparator<AbstractCard> heuristic = actionHeuristics
                                 .get(AbstractDungeon.actionManager.currentAction.getClass());
                         return heuristic.compare(e1.getValue(), e2.getValue());
-                    }).forEach(entry -> orderedIndeces.add(entry.getKey()));
+                    });
+                    for (Map.Entry<Integer, AbstractCard> entry : toSort) {
+                        orderedIndeces.add(entry.getKey());
+                    }
 
                 } else {
                     for (int i = 0; i < AbstractDungeon.player.hand.group.size(); i++) {
@@ -147,7 +151,9 @@ public final class CommandList {
                     }
                 }
 
-                orderedIndeces.forEach(index -> commands.add(new HandSelectCommand(index)));
+                for (Integer index : orderedIndeces) {
+                    commands.add(new HandSelectCommand(index));
+                }
             }
 
             if (isHandSelectConfirmButtonEnabled()) {
