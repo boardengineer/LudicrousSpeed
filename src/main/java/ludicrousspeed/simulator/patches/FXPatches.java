@@ -8,6 +8,7 @@ import com.megacrit.cardcrawl.actions.animations.VFXAction;
 import com.megacrit.cardcrawl.actions.common.DamageAction;
 import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
+import com.megacrit.cardcrawl.vfx.combat.CardPoofEffect;
 import com.megacrit.cardcrawl.vfx.combat.ShockWaveEffect;
 import com.megacrit.cardcrawl.vfx.combat.SmallLaserEffect;
 import com.megacrit.cardcrawl.vfx.combat.StrikeEffect;
@@ -140,6 +141,21 @@ public class FXPatches {
     )
     public static class TooManyLinesPatch {
         public static SpireReturn Prefix(StrikeEffect _instance, AbstractCreature target, float x, float y, int number) {
+            if (LudicrousSpeedMod.plaidMode) {
+                _instance.isDone = true;
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = CardPoofEffect.class,
+            paramtypez = {float.class, float.class},
+            method = SpirePatch.CONSTRUCTOR
+    )
+    public static class NoCardPoofFxConstructorPatch {
+        public static SpireReturn Prefix(CardPoofEffect _instance, float x, float y) {
             if (LudicrousSpeedMod.plaidMode) {
                 _instance.isDone = true;
                 return SpireReturn.Return(null);
