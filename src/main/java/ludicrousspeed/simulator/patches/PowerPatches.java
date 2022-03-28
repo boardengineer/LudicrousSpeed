@@ -251,4 +251,15 @@ public class PowerPatches {
             return SpireReturn.Continue();
         }
     }
+
+    @SpirePatch(clz = AbstractPower.class, method = "loadRegion")
+    public static class NoLoadRegionPatch {
+        @SpirePrefixPatch
+        public static SpireReturn doNothing(AbstractPower power, String fileName) {
+            if(shouldGoFast) {
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
 }

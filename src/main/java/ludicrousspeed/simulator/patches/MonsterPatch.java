@@ -259,11 +259,22 @@ public class MonsterPatch {
     public static class BetterMonsterStartTurnPatch {
         @SpirePrefixPatch
         public static SpireReturn betterUpdate(MonsterStartTurnAction action) {
-            if(!action.isDone) {
+            if (!action.isDone) {
                 AbstractDungeon.getCurrRoom().monsters.applyPreTurnLogic();
             }
             action.isDone = true;
             return SpireReturn.Return(null);
+        }
+    }
+
+    @SpirePatch(clz = AbstractPower.class, method = "flashWithoutSound")
+    public static class NoFlashingPatch {
+        @SpirePrefixPatch
+        public static SpireReturn noFlash(AbstractPower power) {
+            if (LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
         }
     }
 }

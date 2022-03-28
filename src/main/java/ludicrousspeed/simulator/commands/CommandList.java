@@ -128,7 +128,8 @@ public final class CommandList {
 
                 ArrayList<Integer> orderedIndeces = new ArrayList<>();
 
-                if (actionHeuristics.containsKey(AbstractDungeon.actionManager.currentAction.getClass())) {
+                if (actionHeuristics
+                        .containsKey(AbstractDungeon.actionManager.currentAction.getClass())) {
                     HashMap<Integer, AbstractCard> indexToCardMap = new HashMap<>();
 
                     for (int i = 0; i < AbstractDungeon.player.hand.group.size(); i++) {
@@ -210,6 +211,7 @@ public final class CommandList {
 
     private static boolean shouldCheckForPlays() {
         return isInDungeon() &&
+                !(AbstractDungeon.player.isDead || AbstractDungeon.player.isDying) &&
                 (AbstractDungeon.getCurrRoom().phase == AbstractRoom.RoomPhase.COMBAT &&
                         !AbstractDungeon.isScreenUp &&
                         (AbstractDungeon.actionManager.currentAction == null && AbstractDungeon.actionManager.actions
