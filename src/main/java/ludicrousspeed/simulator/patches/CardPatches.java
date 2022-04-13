@@ -298,6 +298,18 @@ public class CardPatches {
             paramtypez = {AbstractCard.class, float.class, float.class},
             method = SpirePatch.CONSTRUCTOR
     )
+    public static class ApplyPowersOnNewCardsPatch {
+        @SpirePostfixPatch
+        public static void applypowers(ShowCardAndAddToHandEffect _instance, AbstractCard card, float offsetX, float offsetY) {
+            AbstractDungeon.player.hand.applyPowers();
+        }
+    }
+
+    @SpirePatch(
+            clz = ShowCardAndAddToHandEffect.class,
+            paramtypez = {AbstractCard.class, float.class, float.class},
+            method = SpirePatch.CONSTRUCTOR
+    )
     public static class ShowCardAndAddToHandEffectPatchTwo {
         @SpirePrefixPatch
         public static SpireReturn Prefix(ShowCardAndAddToHandEffect _instance, AbstractCard card, float x, float y) {
@@ -701,6 +713,17 @@ public class CardPatches {
     public static class classNoLoadCardImagePatc {
         @SpirePrefixPatch
         public static SpireReturn doNothing(CustomCard card, String img) {
+            if (shouldGoFast) {
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(clz = AbstractCard.class, method = "initializeDescription")
+    public static class skipInitDescription {
+        @SpirePrefixPatch
+        public static SpireReturn doNothing(AbstractCard card) {
             if (shouldGoFast) {
                 return SpireReturn.Return(null);
             }
