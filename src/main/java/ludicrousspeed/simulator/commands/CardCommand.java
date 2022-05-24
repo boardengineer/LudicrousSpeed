@@ -79,6 +79,10 @@ public class CardCommand implements Command {
 
         if (monsterIndex != -1) {
             monster = AbstractDungeon.getMonsters().monsters.get(monsterIndex);
+
+            if (AbstractDungeon.player.hasPower("Surrounded")) {
+                AbstractDungeon.player.flipHorizontal = monster.drawX < AbstractDungeon.player.drawX;
+            }
         }
 
         AbstractDungeon.actionManager.cardQueue.add(new CardQueueItem(card, monster));
