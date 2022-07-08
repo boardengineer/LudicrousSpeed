@@ -6,12 +6,10 @@ import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
 import com.megacrit.cardcrawl.actions.common.ApplyPowerToRandomEnemyAction;
+import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.helpers.ImageMaster;
-import com.megacrit.cardcrawl.relics.AbstractRelic;
-import com.megacrit.cardcrawl.relics.AncientTeaSet;
-import com.megacrit.cardcrawl.relics.BottledFlame;
-import com.megacrit.cardcrawl.relics.GremlinHorn;
+import com.megacrit.cardcrawl.relics.*;
 import com.megacrit.cardcrawl.vfx.RelicAboveCreatureEffect;
 import ludicrousspeed.LudicrousSpeedMod;
 import relicstats.patches.relics.TheSpecimenInfo;
@@ -117,6 +115,50 @@ public class RelicPatches {
     public static class FixDescriptionNPE {
         public static void Replace(BottledFlame _instance) {
 
+        }
+    }
+
+    @SpirePatch(clz = Omamori.class, method = "use")
+    public static class UseOmaPatch {
+        @SpirePrefixPatch
+        public static SpireReturn noDescriptionUpdate(Omamori omamori) {
+            if (LudicrousSpeedMod.plaidMode) {
+                --omamori.counter;
+                if (omamori.counter == 0) {
+                    omamori.setCounter(0);
+                }
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(clz = Omamori.class, method = "setCounter")
+    public static class SetCounterOmaPatch {
+        @SpirePrefixPatch
+        public static SpireReturn noDescriptionUpdate(Omamori omamori, int setCounter) {
+            if (LudicrousSpeedMod.plaidMode) {
+                omamori.counter = setCounter;
+                if (setCounter == 0) {
+                    omamori.usedUp();
+                }
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(clz = VelvetChoker.class, method = "canPlay")
+    public static class VelvetChokerPatch {
+        @SpirePrefixPatch
+        public static SpireReturn noDescriptionUpdate(VelvetChoker velvetChoker, AbstractCard card) {
+            if (LudicrousSpeedMod.plaidMode) {
+                if(velvetChoker.counter >= 6) {
+                    return SpireReturn.Return(false);
+                }
+                return SpireReturn.Return(true);
+            }
+            return SpireReturn.Continue();
         }
     }
 

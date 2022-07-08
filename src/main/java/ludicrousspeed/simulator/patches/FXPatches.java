@@ -1,12 +1,22 @@
 package ludicrousspeed.simulator.patches;
 
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GLTexture;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.evacipated.cardcrawl.mod.stslib.patches.ColoredDamagePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
 import com.megacrit.cardcrawl.actions.animations.VFXAction;
 import com.megacrit.cardcrawl.actions.common.DamageAction;
+import com.megacrit.cardcrawl.audio.SoundMaster;
 import com.megacrit.cardcrawl.core.AbstractCreature;
+import com.megacrit.cardcrawl.helpers.FontHelper;
+import com.megacrit.cardcrawl.localization.CardStrings;
+import com.megacrit.cardcrawl.localization.LocalizedStrings;
+import com.megacrit.cardcrawl.localization.RelicStrings;
 import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
 import com.megacrit.cardcrawl.vfx.combat.ShockWaveEffect;
 import com.megacrit.cardcrawl.vfx.combat.SmallLaserEffect;
@@ -56,6 +66,15 @@ public class FXPatches {
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(clz = ColoredDamagePatch.MakeColor.class, method = "Postfix")
+    public static class BaseMusicPatch {
+        @SpirePrefixPatch
+        public static SpireReturn<Music> noRng() {
+            System.err.println("this is happening");
+            return SpireReturn.Return(null);
         }
     }
 
@@ -143,6 +162,103 @@ public class FXPatches {
             if (LudicrousSpeedMod.plaidMode) {
                 _instance.isDone = true;
                 return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = SoundMaster.class,
+            paramtypez = {String.class, boolean.class},
+            method = "play"
+    )
+    public static class NoPlaySoundPatch {
+        public static SpireReturn Prefix(SoundMaster _instance, String key, boolean useBgmVolume) {
+            if (LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return(0L);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = SoundMaster.class,
+            paramtypez = {String.class},
+            method = "play"
+    )
+    public static class NoPlaySoundPatch2 {
+        public static SpireReturn Prefix(SoundMaster _instance, String key) {
+            if (LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return(0L);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = SoundMaster.class,
+            paramtypez = {String.class, float.class},
+            method = "play"
+    )
+    public static class NoPlaySoundPatch3 {
+        public static SpireReturn Prefix(SoundMaster _instance, String key, float pitchVariation) {
+            if (LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return(0L);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = GLTexture.class,
+            method = "setFilter"
+    )
+    public static class NoTexturePatch {
+        public static SpireReturn Prefix(GLTexture _instance, Texture.TextureFilter minFilter, Texture.TextureFilter maxFilter) {
+            if (LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+
+    @SpirePatch(
+            clz = LocalizedStrings.class,
+            method = "getRelicStrings"
+    )
+    public static class NoLocalRelicStringsPatch {
+        public static SpireReturn Prefix(LocalizedStrings _instance, String relicName) {
+            if (LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return(new RelicStrings());
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    public static final CardStrings MOCK_STRINGS = CardStrings.getMockCardString();
+
+    @SpirePatch(
+            clz = LocalizedStrings.class,
+            method = "getCardStrings"
+    )
+    public static class NoLocalCardStringsPatch {
+        public static SpireReturn Prefix(LocalizedStrings _instance, String cardName) {
+            if (LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return(MOCK_STRINGS);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = FontHelper.class,
+            method = "colorString"
+    )
+    public static class NoFontHelperColorStringPatch {
+        public static SpireReturn Prefix(String input, String colorValue) {
+            if (LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return("");
             }
             return SpireReturn.Continue();
         }
