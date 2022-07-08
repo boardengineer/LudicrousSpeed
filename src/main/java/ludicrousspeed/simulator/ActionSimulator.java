@@ -128,33 +128,18 @@ public class ActionSimulator {
      */
     public static void advanceActionQueue(boolean shouldLog) {
         if (!actionManager.actions.isEmpty()) {
-            if (shouldLog) {
-                System.err.println("case 1 " + actionManager.actions + " " + shouldWaitOnActions());
-            }
-
             actionManager.currentAction = actionManager.actions.remove(0);
             actionManager.phase = GameActionManager.Phase.EXECUTING_ACTIONS;
             actionManager.hasControl = true;
         } else if (!actionManager.preTurnActions.isEmpty()) {
-            if (shouldLog) {
-                System.err.println("case 2");
-            }
-
             actionManager.currentAction = actionManager.preTurnActions.remove(0);
             actionManager.phase = GameActionManager.Phase.EXECUTING_ACTIONS;
             actionManager.hasControl = true;
         } else if (!actionManager.cardQueue.isEmpty()) {
-            if (shouldLog) {
-                System.err.println("case 3");
-            }
-
             actionManager.usingCard = true;
             CardQueueItem queueItem = actionManager.cardQueue.get(0);
             AbstractCard c = queueItem.card;
             if (c == null) {
-                if (shouldLog) {
-                    System.err.println("case 3.1");
-                }
                 callEndOfTurnActions();
             } else if (c.equals(actionManager.lastCard)) {
                 actionManager.lastCard = null;
@@ -182,9 +167,6 @@ public class ActionSimulator {
                     .canUse(AbstractDungeon.player, queueItem.monster) && !queueItem.card.dontTriggerOnUseCard) {
                 AbstractDungeon.player.limbo.clear();
             } else {
-                if (shouldLog) {
-                    System.err.println("case 3.2");
-                }
                 canPlayCard = true;
                 if (c.freeToPlay()) {
                     c.freeToPlayOnce = true;
@@ -202,7 +184,7 @@ public class ActionSimulator {
                             .forEach(power -> power.onPlayCard(queueItem.card, queueItem.monster));
 
                     AbstractDungeon.getMonsters().monsters.stream()
-                                                          .flatMap(monstes -> monstes.powers
+                                                          .flatMap(monster -> monster.powers
                                                                   .stream()).forEach(power -> power
                             .onPlayCard(queueItem.card, queueItem.monster));
 
