@@ -73,7 +73,6 @@ public class FXPatches {
     public static class BaseMusicPatch {
         @SpirePrefixPatch
         public static SpireReturn<Music> noRng() {
-            System.err.println("this is happening");
             return SpireReturn.Return(null);
         }
     }
@@ -236,7 +235,7 @@ public class FXPatches {
         }
     }
 
-    public static final CardStrings MOCK_STRINGS = CardStrings.getMockCardString();
+    public static final CardStrings MOCK_CARD_STRINGS = CardStrings.getMockCardString();
 
     @SpirePatch(
             clz = LocalizedStrings.class,
@@ -245,7 +244,7 @@ public class FXPatches {
     public static class NoLocalCardStringsPatch {
         public static SpireReturn Prefix(LocalizedStrings _instance, String cardName) {
             if (LudicrousSpeedMod.plaidMode) {
-                return SpireReturn.Return(MOCK_STRINGS);
+                return SpireReturn.Return(MOCK_CARD_STRINGS);
             }
             return SpireReturn.Continue();
         }
@@ -273,5 +272,12 @@ public class FXPatches {
         public static void Prefix(DamageAction _instance) {
             _instance.isDone = true;
         }
+    }
+
+    private RelicStrings getMockRelicStrings() {
+        RelicStrings result = new RelicStrings();
+
+        result.DESCRIPTIONS = new String[]{"[MISSING_0]", "[MISSING_1]", "[MISSING_2]", "[MISSING_3]"};
+        return result;
     }
 }
