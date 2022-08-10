@@ -18,8 +18,8 @@ import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 public class CardCommand implements Command {
-    private final int cardIndex;
-    private final int monsterIndex;
+    public final int cardIndex;
+    public final int monsterIndex;
     public final String displayString;
 
     private String diffStateString = null;

@@ -19,14 +19,14 @@ import com.megacrit.cardcrawl.ui.buttons.GridSelectConfirmButton;
 import savestate.PotionState;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public final class CommandList {
+    @Deprecated
     public static List<Command> getAvailableCommands() {
         return getAvailableCommands(null);
     }
 
-
+    @Deprecated
     public static List<Command> getAvailableCommands(Comparator<AbstractCard> playHeuristic) {
         return getAvailableCommands(playHeuristic, new HashMap<>());
     }
@@ -41,57 +41,38 @@ public final class CommandList {
         Set<String> seenCommands = new HashSet<>();
 
         if (shouldCheckForPlays()) {
-            HashMap<AbstractCard, Integer> cardIndeces = new HashMap<>();
+            for(int i = 0; i < hand.size(); i++) {
+                AbstractCard card = hand.get(i);
 
-            for (int i = 0; i < hand.size(); i++) {
-                cardIndeces.put(hand.get(i), i);
-            }
+                // Only populate the first time you've seen a card with this specific {name X upgraded}
+                String setName = card.cardID + (card.upgraded ? "+" : "");
+                int oldCount = seenCommands.size();
+                seenCommands.add(setName);
+                if (oldCount == seenCommands.size()) {
+                    continue;
+                }
 
-            Stream<Map.Entry<AbstractCard, Integer>> cardStream = cardIndeces.entrySet().stream();
-
-            if (cardComparator != null) {
-                cardStream = cardStream.sorted((card1, card2) -> cardComparator
-                        .compare(card1.getKey(), card2.getKey()));
-            }
-
-            cardStream.forEach(
-                    cardEntry -> {
-                        AbstractCard card = cardEntry.getKey();
-
-                        // Only populate the first time you've seen a card with this specific {name X upgraded}
-                        String setName = card.name + (card.upgraded ? "+" : "");
-                        int oldCount = seenCommands.size();
-                        seenCommands.add(setName);
-                        if (oldCount == seenCommands.size()) {
-                            return;
+                if (card.target == AbstractCard.CardTarget.ENEMY || card.target == AbstractCard.CardTarget.SELF_AND_ENEMY) {
+                    for (int j = 0; j < monsters.size(); j++) {
+                        AbstractMonster monster = monsters.get(j);
+                        if (card.canUse(player, monster) && !monster.isDeadOrEscaped()) {
+                            commands.add(new CardCommand(i, j, String.format(card.cardID)));
                         }
-
-                        if (card.target == AbstractCard.CardTarget.ENEMY || card.target == AbstractCard.CardTarget.SELF_AND_ENEMY) {
-                            for (int j = 0; j < monsters.size(); j++) {
-                                AbstractMonster monster = monsters.get(j);
-                                if (card.canUse(player, monster) && !monster.isDeadOrEscaped()) {
-                                    commands.add(new CardCommand(cardEntry.getValue(), j, String
-                                            .format(card.cardID)));
-                                }
-                            }
-                        }
-
-                        if (card.target == AbstractCard.CardTarget.ALL_ENEMY || card.target == AbstractCard.CardTarget.ALL) {
-                            if (card.canUse(player, null)) {
-                                commands.add(new CardCommand(cardEntry
-                                        .getValue(), card.cardID));
-                            }
-                        }
-
-                        if (card.target == AbstractCard.CardTarget.SELF || card.target == AbstractCard.CardTarget.SELF_AND_ENEMY || card.target == AbstractCard.CardTarget.NONE) {
-                            if (card.canUse(player, null)) {
-                                commands.add(new CardCommand(cardEntry
-                                        .getValue(), card.cardID));
-                            }
-                        }
-
                     }
-            );
+                }
+
+                if (card.target == AbstractCard.CardTarget.ALL_ENEMY || card.target == AbstractCard.CardTarget.ALL) {
+                    if (card.canUse(player, null)) {
+                        commands.add(new CardCommand(i, card.cardID));
+                    }
+                }
+
+                if (card.target == AbstractCard.CardTarget.SELF || card.target == AbstractCard.CardTarget.SELF_AND_ENEMY || card.target == AbstractCard.CardTarget.NONE) {
+                    if (card.canUse(player, null)) {
+                        commands.add(new CardCommand(i, card.cardID));
+                    }
+                }
+            }
 
             for (int i = 0; i < potions.size(); i++) {
                 AbstractPotion potion = potions.get(i);
@@ -139,7 +120,11 @@ public final class CommandList {
                     indexToCardMap.entrySet().stream().sorted((e1, e2) -> {
                         Comparator<AbstractCard> heuristic = actionHeuristics
                                 .get(AbstractDungeon.actionManager.currentAction.getClass());
-                        return heuristic.compare(e1.getValue(), e2.getValue());
+                        int compValue = heuristic.compare(e1.getValue(), e2.getValue());
+                        if (compValue == 0) {
+                            return e1.getKey() - e2.getKey();
+                        }
+                        return compValue;
                     }).forEach(entry -> orderedIndeces.add(entry.getKey()));
 
                 } else {

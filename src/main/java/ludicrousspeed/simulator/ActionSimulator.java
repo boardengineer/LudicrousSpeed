@@ -24,7 +24,6 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.relics.UnceasingTop;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
-import com.megacrit.cardcrawl.vfx.cardManip.ShowCardAndObtainEffect;
 import ludicrousspeed.LudicrousSpeedMod;
 import savestate.actions.EnqueueEndTurnAction;
 
@@ -45,9 +44,7 @@ public class ActionSimulator {
     public static void actionLoop() {
         while (shouldWaitOnActions() || shouldStepAiController()) {
             AbstractDungeon.topLevelEffects.clear();
-            AbstractDungeon.effectList
-                    .removeIf(effect -> !(effect instanceof ShowCardAndObtainEffect));
-
+            AbstractDungeon.effectList.clear();
             AbstractDungeon.effectsQueue.clear();
 
             if (shouldStepAiController()) {

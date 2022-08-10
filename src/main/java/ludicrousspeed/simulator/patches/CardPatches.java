@@ -240,6 +240,21 @@ public class CardPatches {
         }
     }
 
+    @SpirePatch(clz = AbstractCard.class, method = "upgradeName")
+    public static class NoUpgradeNamePatch {
+        @SpirePrefixPatch
+        public static SpireReturn noNameChange(AbstractCard card) {
+            if (LudicrousSpeedMod.plaidMode) {
+                ++card.timesUpgraded;
+                card.upgraded = true;
+
+                return SpireReturn.Return(null);
+            }
+
+            return SpireReturn.Continue();
+        }
+    }
+
     @SpirePatch(
             clz = AbstractCard.class,
             paramtypez = {},

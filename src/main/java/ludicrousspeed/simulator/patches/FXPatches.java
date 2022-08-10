@@ -12,11 +12,15 @@ import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
 import com.megacrit.cardcrawl.actions.animations.VFXAction;
 import com.megacrit.cardcrawl.actions.common.DamageAction;
 import com.megacrit.cardcrawl.audio.SoundMaster;
+import com.megacrit.cardcrawl.cards.DamageInfo;
 import com.megacrit.cardcrawl.core.AbstractCreature;
+import com.megacrit.cardcrawl.core.CardCrawlGame;
+import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.localization.CardStrings;
 import com.megacrit.cardcrawl.localization.LocalizedStrings;
 import com.megacrit.cardcrawl.localization.RelicStrings;
+import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
 import com.megacrit.cardcrawl.vfx.combat.ShockWaveEffect;
 import com.megacrit.cardcrawl.vfx.combat.SmallLaserEffect;
@@ -279,5 +283,51 @@ public class FXPatches {
 
         result.DESCRIPTIONS = new String[]{"[MISSING_0]", "[MISSING_1]", "[MISSING_2]", "[MISSING_3]"};
         return result;
+    }
+
+
+    @SpirePatch(clz = AbstractCreature.class, method = "decrementBlock")
+    public static class NoFXOnDecrementBlockPatch {
+        @SpirePrefixPatch
+        public static SpireReturn NoFx(AbstractCreature creature, DamageInfo info, int tempDamageAmount) {
+            if (LudicrousSpeedMod.plaidMode) {
+                int damageAmount = tempDamageAmount;
+
+                if (info.type != DamageInfo.DamageType.HP_LOSS && creature.currentBlock > 0) {
+                    if (damageAmount > creature.currentBlock) {
+                        damageAmount -= creature.currentBlock;
+
+                        creature.loseBlock();
+
+                        // Just reimplement in place
+                        // creature.brokeBlock();
+                        if (creature instanceof AbstractMonster) {
+                            AbstractDungeon.player.relics
+                                    .forEach(relic -> relic.onBlockBroken(creature));
+                        }
+
+                    } else if (damageAmount == creature.currentBlock) {
+                        damageAmount = 0;
+                        creature.loseBlock();
+
+                        //this.brokeBlock();
+                        if (creature instanceof AbstractMonster) {
+                            AbstractDungeon.player.relics
+                                    .forEach(relic -> relic.onBlockBroken(creature));
+                        }
+
+                    } else {
+                        CardCrawlGame.sound.play("BLOCK_ATTACK");
+                        creature.loseBlock(damageAmount);
+
+                        damageAmount = 0;
+                    }
+                }
+
+                return SpireReturn.Return(damageAmount);
+            }
+
+            return SpireReturn.Continue();
+        }
     }
 }
