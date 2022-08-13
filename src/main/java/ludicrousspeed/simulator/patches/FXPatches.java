@@ -246,7 +246,7 @@ public class FXPatches {
             method = "getCardStrings"
     )
     public static class NoLocalCardStringsPatch {
-        public static SpireReturn Prefix(LocalizedStrings _instance, String cardName) {
+        public static SpireReturn<CardStrings> Prefix(LocalizedStrings _instance, String cardName) {
             if (LudicrousSpeedMod.plaidMode) {
                 return SpireReturn.Return(MOCK_CARD_STRINGS);
             }
