@@ -1,11 +1,9 @@
 package ludicrousspeed.simulator.patches;
 
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GLTexture;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.evacipated.cardcrawl.mod.stslib.patches.ColoredDamagePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
@@ -70,14 +68,6 @@ public class FXPatches {
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();
-        }
-    }
-
-    @SpirePatch(clz = ColoredDamagePatch.MakeColor.class, method = "Postfix")
-    public static class BaseMusicPatch {
-        @SpirePrefixPatch
-        public static SpireReturn<Music> noRng() {
-            return SpireReturn.Return(null);
         }
     }
 

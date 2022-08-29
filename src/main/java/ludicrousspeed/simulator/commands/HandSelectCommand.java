@@ -11,20 +11,46 @@ import java.lang.reflect.Method;
 
 public class HandSelectCommand implements Command {
     private final int cardIndex;
+    public final String diffStateString;
 
     public HandSelectCommand(int cardIndex) {
         this.cardIndex = cardIndex;
+        this.diffStateString = null;
     }
 
     public HandSelectCommand(String jsonString) {
         JsonObject parsed = new JsonParser().parse(jsonString).getAsJsonObject();
 
+        this.diffStateString = null;
+        this.cardIndex = parsed.get("card_index").getAsInt();
+    }
+
+    public HandSelectCommand(String jsonString, String displayString) {
+        JsonObject parsed = new JsonParser().parse(jsonString).getAsJsonObject();
+
+        this.diffStateString = displayString;
         this.cardIndex = parsed.get("card_index").getAsInt();
     }
 
     @Override
     public void execute() {
-
+//        if (diffStateString != null) {
+//            try {
+//                String actualState = new SaveState().diffEncode();
+//                String expectedState = Files.lines(Paths.get(diffStateString))
+//                                            .collect(Collectors.joining());
+//
+//                if (!SaveState.diff(actualState, expectedState)) {
+//                    System.err.println("PANIC PANIC PANIC " + this.toString());
+//                    LudicrousSpeedMod.mustRestart = true;
+//                    return;
+//                }
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
 //        if (!shouldGoFast()) {
 //            System.err.println("executing hand select command");
