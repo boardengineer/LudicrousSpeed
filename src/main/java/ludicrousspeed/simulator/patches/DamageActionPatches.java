@@ -44,7 +44,11 @@ public class DamageActionPatches {
                                    .invoke(_instance);
                 }
 
-                _instance.target.damage(info);
+                try {
+                    _instance.target.damage(info);
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
                 if (AbstractDungeon.getCurrRoom().monsters.areMonstersBasicallyDead()) {
                     AbstractDungeon.actionManager.clearPostCombatActions();
                 }

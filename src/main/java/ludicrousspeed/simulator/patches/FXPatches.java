@@ -12,13 +12,13 @@ import com.megacrit.cardcrawl.actions.common.DamageAction;
 import com.megacrit.cardcrawl.audio.SoundMaster;
 import com.megacrit.cardcrawl.cards.DamageInfo;
 import com.megacrit.cardcrawl.core.AbstractCreature;
-import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.localization.CardStrings;
 import com.megacrit.cardcrawl.localization.LocalizedStrings;
 import com.megacrit.cardcrawl.localization.RelicStrings;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
+import com.megacrit.cardcrawl.powers.TimeWarpPower;
 import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
 import com.megacrit.cardcrawl.vfx.combat.ShockWaveEffect;
 import com.megacrit.cardcrawl.vfx.combat.SmallLaserEffect;
@@ -166,9 +166,10 @@ public class FXPatches {
             method = "play"
     )
     public static class NoPlaySoundPatch {
-        public static SpireReturn Prefix(SoundMaster _instance, String key, boolean useBgmVolume) {
+        @SpirePrefixPatch
+        public static SpireReturn<Long> Prefix(SoundMaster _instance, String key, boolean useBgmVolume) {
             if (LudicrousSpeedMod.plaidMode) {
-                return SpireReturn.Return(0L);
+                return SpireReturn.Return(1L);
             }
             return SpireReturn.Continue();
         }
@@ -180,9 +181,10 @@ public class FXPatches {
             method = "play"
     )
     public static class NoPlaySoundPatch2 {
-        public static SpireReturn Prefix(SoundMaster _instance, String key) {
+        @SpirePrefixPatch
+        public static SpireReturn<Long> noSoundInPlaidMode(SoundMaster _instance, String key) {
             if (LudicrousSpeedMod.plaidMode) {
-                return SpireReturn.Return(0L);
+                return SpireReturn.Return(1L);
             }
             return SpireReturn.Continue();
         }
@@ -194,9 +196,11 @@ public class FXPatches {
             method = "play"
     )
     public static class NoPlaySoundPatch3 {
-        public static SpireReturn Prefix(SoundMaster _instance, String key, float pitchVariation) {
+        @SpirePrefixPatch
+        public static SpireReturn<Long> noSoundInPlaidMode(SoundMaster _instance, String key, float pitchVariation) {
             if (LudicrousSpeedMod.plaidMode) {
-                return SpireReturn.Return(0L);
+                Long result = 1L;
+                return SpireReturn.Return(result);
             }
             return SpireReturn.Continue();
         }
@@ -208,6 +212,20 @@ public class FXPatches {
     )
     public static class NoTexturePatch {
         public static SpireReturn Prefix(GLTexture _instance, Texture.TextureFilter minFilter, Texture.TextureFilter maxFilter) {
+            if (LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = TimeWarpPower.class,
+            method = "playApplyPowerSfx"
+    )
+    public static class NoPlaySoundInTimeWarpPatch {
+        @SpirePrefixPatch
+        public static SpireReturn Prefix(TimeWarpPower _instance) {
             if (LudicrousSpeedMod.plaidMode) {
                 return SpireReturn.Return(null);
             }
@@ -307,9 +325,7 @@ public class FXPatches {
                         }
 
                     } else {
-                        CardCrawlGame.sound.play("BLOCK_ATTACK");
                         creature.loseBlock(damageAmount);
-
                         damageAmount = 0;
                     }
                 }
