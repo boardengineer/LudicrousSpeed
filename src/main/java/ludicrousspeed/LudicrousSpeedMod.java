@@ -34,7 +34,7 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber {
         }
     }
 
-    private static boolean shouldStep() {
+    public static boolean shouldStep() {
         return shouldCheckForPlays() || isEndCommandAvailable() || ActionSimulator
                 .shouldStepAiController();
     }
