@@ -1,5 +1,6 @@
 package ludicrousspeed.simulator.patches;
 
+import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GLTexture;
 import com.badlogic.gdx.graphics.Texture;
@@ -12,6 +13,7 @@ import com.megacrit.cardcrawl.actions.common.DamageAction;
 import com.megacrit.cardcrawl.audio.SoundMaster;
 import com.megacrit.cardcrawl.cards.DamageInfo;
 import com.megacrit.cardcrawl.core.AbstractCreature;
+import com.megacrit.cardcrawl.desktop.DesktopLauncher;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import com.megacrit.cardcrawl.localization.CardStrings;
@@ -331,6 +333,25 @@ public class FXPatches {
                 }
 
                 return SpireReturn.Return(damageAmount);
+            }
+
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(clz = DesktopLauncher.class, method = "loadSettings")
+    public static class MessWithOutputPatch {
+        @SpirePrefixPatch
+        public static SpireReturn smallHeight(LwjglApplicationConfiguration config) {
+            String isServerFlag = System.getProperty("isServer");
+
+            if (isServerFlag != null) {
+                if (Boolean.parseBoolean(isServerFlag)) {
+                    config.fullscreen = false;
+                    config.height = 800;
+                    config.width = 800;
+                    return SpireReturn.Return(null);
+                }
             }
 
             return SpireReturn.Continue();
