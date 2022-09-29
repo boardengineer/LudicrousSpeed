@@ -6,10 +6,8 @@ import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import ludicrousspeed.LudicrousSpeedMod;
 import savestate.SaveState;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 public class EndCommand implements Command {
@@ -52,8 +50,12 @@ public class EndCommand implements Command {
         if (diffStateString != null) {
             try {
                 String actualState = new SaveState().diffEncode();
-                String expectedState = Files.lines(Paths.get(diffStateString))
-                                            .collect(Collectors.joining());
+                String expectedState = "";
+                try (FileInputStream fis = new FileInputStream(diffStateString);
+                     InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+                     BufferedReader reader = new BufferedReader(isr)) {
+                    expectedState = reader.lines().collect(Collectors.joining());
+                }
 
                 if (!SaveState.diff(actualState, expectedState)) {
                     System.err.println("PANIC PANIC PANIC " + this.toString());
@@ -75,7 +77,7 @@ public class EndCommand implements Command {
     public String toString() {
 
         String debugString = "";
-        if(stateDebugInfo != null) {
+        if (stateDebugInfo != null) {
             debugString = stateDebugInfo.encode();
         }
 

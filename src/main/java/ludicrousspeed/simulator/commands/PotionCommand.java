@@ -1,19 +1,17 @@
 package ludicrousspeed.simulator.commands;
 
-import ludicrousspeed.LudicrousSpeedMod;
-import ludicrousspeed.simulator.ActionSimulator;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.megacrit.cardcrawl.actions.utility.WaitAction;
 import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.potions.AbstractPotion;
+import ludicrousspeed.LudicrousSpeedMod;
+import ludicrousspeed.simulator.ActionSimulator;
 import savestate.SaveState;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 public class PotionCommand implements Command {
@@ -52,8 +50,12 @@ public class PotionCommand implements Command {
         if (diffStateString != null) {
             try {
                 String actualState = new SaveState().diffEncode();
-                String expectedState = Files.lines(Paths.get(diffStateString))
-                                            .collect(Collectors.joining());
+                String expectedState = "";
+                try (FileInputStream fis = new FileInputStream(diffStateString);
+                     InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+                     BufferedReader reader = new BufferedReader(isr)) {
+                    expectedState = reader.lines().collect(Collectors.joining());
+                }
 
                 if (!SaveState.diff(actualState, expectedState)) {
                     System.err.println("PANIC PANIC PANIC " + this.toString());

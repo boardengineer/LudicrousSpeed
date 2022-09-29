@@ -34,40 +34,11 @@ public class HandSelectCommand implements Command {
 
     @Override
     public void execute() {
-//        if (diffStateString != null) {
-//            try {
-//                String actualState = new SaveState().diffEncode();
-//                String expectedState = Files.lines(Paths.get(diffStateString))
-//                                            .collect(Collectors.joining());
-//
-//                if (!SaveState.diff(actualState, expectedState)) {
-//                    System.err.println("PANIC PANIC PANIC " + this.toString());
-//                    LudicrousSpeedMod.mustRestart = true;
-//                    return;
-//                }
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
-//        if (!shouldGoFast()) {
-//            System.err.println("executing hand select command");
-//            makeHandSelectScreenChoice(cardIndex);
-//        } else {
-//
-
         AbstractDungeon.handCardSelectScreen.hoveredCard = AbstractDungeon.player.hand.group
                 .get(cardIndex);
 
         ReflectionHacks.privateMethod(HandCardSelectScreen.class, "selectHoveredCard")
                        .invoke(AbstractDungeon.handCardSelectScreen);
-
-        //        AbstractDungeon.handCardSelectScreen.button.hb.clicked = true;
-//        AbstractDungeon.handCardSelectScreen.update();
-
-//        }
     }
 
     @Override

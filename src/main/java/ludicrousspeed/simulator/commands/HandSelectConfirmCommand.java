@@ -19,25 +19,6 @@ public class HandSelectConfirmCommand implements Command {
 
     @Override
     public void execute() {
-//        if (diffStateString != null) {
-//            try {
-//                String actualState = new SaveState().diffEncode();
-//                String expectedState = Files.lines(Paths.get(diffStateString))
-//                                            .collect(Collectors.joining());
-//
-//                if (!SaveState.diff(actualState, expectedState)) {
-//                    System.err.println("PANIC PANIC PANIC " + this.toString());
-//                    LudicrousSpeedMod.mustRestart = true;
-//                    return;
-//                }
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
-
         HandCardSelectScreen screen = AbstractDungeon.handCardSelectScreen;
 
         ReflectionHacks
