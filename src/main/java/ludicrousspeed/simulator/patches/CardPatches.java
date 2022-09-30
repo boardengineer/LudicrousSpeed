@@ -508,6 +508,23 @@ public class CardPatches {
         }
     }
 
+    @SpirePatch(clz = CardGroup.class, method = "moveToExhaustPile")
+    public static class ResetOnExhaustPatch {
+        @SpirePostfixPatch
+        public static void Postfix(CardGroup cardGroup, AbstractCard c) {
+            c.resetAttributes();
+        }
+    }
+
+    @SpirePatch(clz = CardGroup.class, method = "sortAlphabetically")
+    public static class NoNameSortPatch {
+        @SpirePrefixPatch
+        public static SpireReturn Prefix(CardGroup cardGroup, boolean ascending) {
+            // names get messed up
+            return SpireReturn.Return(null);
+        }
+    }
+
     @SpirePatch(
             clz = ShowCardAction.class,
             paramtypez = {},
