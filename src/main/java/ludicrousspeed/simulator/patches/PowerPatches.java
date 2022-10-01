@@ -3,6 +3,7 @@ package ludicrousspeed.simulator.patches;
 import basemod.ReflectionHacks;
 import com.evacipated.cardcrawl.mod.stslib.powers.interfaces.OnReceivePowerPower;
 import com.evacipated.cardcrawl.mod.stslib.relics.OnAnyPowerAppliedRelic;
+import com.evacipated.cardcrawl.mod.stslib.relics.OnApplyPowerRelic;
 import com.evacipated.cardcrawl.mod.stslib.relics.OnReceivePowerRelic;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
@@ -69,6 +70,20 @@ public class PowerPatches {
                     if (action.source != null) {
                         for (AbstractPower power : source.powers) {
                             power.onApplyPower(powerToApply, target, source);
+                        }
+                    }
+
+                    if (source.isPlayer) {
+                        for (AbstractRelic relic : AbstractDungeon.player.relics) {
+                            if (relic instanceof OnApplyPowerRelic) {
+                                // Allows changing the stackAmount
+                                action.amount = ((OnApplyPowerRelic) relic).onApplyPowerStacks(powerToApply, target, source, action.amount);
+                                // Allows negating the power
+                                boolean apply = ((OnApplyPowerRelic) relic).onApplyPower(powerToApply, target, source);
+                                if (!apply) {
+                                    return SpireReturn.Return(null);
+                                }
+                            }
                         }
                     }
 
