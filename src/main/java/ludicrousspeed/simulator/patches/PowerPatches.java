@@ -71,17 +71,17 @@ public class PowerPatches {
                         for (AbstractPower power : source.powers) {
                             power.onApplyPower(powerToApply, target, source);
                         }
-                    }
 
-                    if (source.isPlayer) {
-                        for (AbstractRelic relic : AbstractDungeon.player.relics) {
-                            if (relic instanceof OnApplyPowerRelic) {
-                                // Allows changing the stackAmount
-                                action.amount = ((OnApplyPowerRelic) relic).onApplyPowerStacks(powerToApply, target, source, action.amount);
-                                // Allows negating the power
-                                boolean apply = ((OnApplyPowerRelic) relic).onApplyPower(powerToApply, target, source);
-                                if (!apply) {
-                                    return SpireReturn.Return(null);
+                        if (source.isPlayer) {
+                            for (AbstractRelic relic : AbstractDungeon.player.relics) {
+                                if (relic instanceof OnApplyPowerRelic) {
+                                    // Allows changing the stackAmount
+                                    action.amount = ((OnApplyPowerRelic) relic).onApplyPowerStacks(powerToApply, target, source, action.amount);
+                                    // Allows negating the power
+                                    boolean apply = ((OnApplyPowerRelic) relic).onApplyPower(powerToApply, target, source);
+                                    if (!apply) {
+                                        return SpireReturn.Return(null);
+                                    }
                                 }
                             }
                         }
