@@ -14,7 +14,7 @@ import com.megacrit.cardcrawl.vfx.ExhaustEmberEffect;
 import com.megacrit.cardcrawl.vfx.cardManip.ExhaustCardEffect;
 
 public class FastExhaustPatches {
-    private static final float START_DURATION = .25F;
+    private static final float START_DURATION = .1F;
 
     @SpirePatch(clz = ExhaustCardEffect.class, method = SpirePatch.CONSTRUCTOR)
     public static class FastDurationPatch {

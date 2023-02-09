@@ -84,6 +84,10 @@ public class CardCommand implements Command {
 
             if (AbstractDungeon.player.hasPower("Surrounded")) {
                 AbstractDungeon.player.flipHorizontal = monster.drawX < AbstractDungeon.player.drawX;
+
+                for (AbstractMonster toApply : AbstractDungeon.getMonsters().monsters) {
+                    toApply.applyPowers();
+                }
             }
         }
 
