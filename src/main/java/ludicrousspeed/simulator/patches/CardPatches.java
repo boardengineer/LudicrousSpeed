@@ -11,6 +11,7 @@ import com.megacrit.cardcrawl.actions.GameActionManager;
 import com.megacrit.cardcrawl.actions.common.*;
 import com.megacrit.cardcrawl.actions.defect.ScrapeFollowUpAction;
 import com.megacrit.cardcrawl.actions.unique.ExhumeAction;
+import com.megacrit.cardcrawl.actions.unique.RestoreRetainedCardsAction;
 import com.megacrit.cardcrawl.actions.utility.ShowCardAction;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.cards.CardGroup;
@@ -18,6 +19,8 @@ import com.megacrit.cardcrawl.cards.DamageInfo;
 import com.megacrit.cardcrawl.cards.SoulGroup;
 import com.megacrit.cardcrawl.cards.green.DaggerSpray;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
+import com.megacrit.cardcrawl.core.AbstractCreature;
+import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.screens.select.GridCardSelectScreen;
@@ -60,6 +63,49 @@ public class CardPatches {
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz=DiscardAtEndOfTurnAction.class,
+            method = "update"
+    )
+    public static class NoRandomEtherealPatch {
+        @SpirePrefixPatch
+        public static SpireReturn noShuffle(DiscardAtEndOfTurnAction action) {
+            float duration = ReflectionHacks.getPrivate(action, AbstractGameAction.class, "duration");
+            if (duration == Settings.ACTION_DUR_XFAST) {
+                Iterator c = AbstractDungeon.player.hand.group.iterator();
+
+                while(true) {
+                    AbstractCard e;
+                    do {
+                        if (!c.hasNext()) {
+                            AbstractDungeon.actionManager.addToTop(new RestoreRetainedCardsAction(AbstractDungeon.player.limbo));
+                            if (!AbstractDungeon.player.hasRelic("Runic Pyramid") && !AbstractDungeon.player.hasPower("Equilibrium")) {
+                                int tempSize = AbstractDungeon.player.hand.size();
+
+                                for(int i = 0; i < tempSize; ++i) {
+                                    AbstractDungeon.actionManager.addToTop(new DiscardAction(AbstractDungeon.player, (AbstractCreature)null, AbstractDungeon.player.hand.size(), true, true));
+                                }
+                            }
+
+                            for(AbstractCard toTrigger: AbstractDungeon.player.hand.group) {
+                                toTrigger.triggerOnEndOfPlayerTurn();
+                            }
+
+                            action.isDone = true;
+                            return SpireReturn.Return(null);
+                        }
+
+                        e = (AbstractCard)c.next();
+                    } while(!e.retain && !e.selfRetain);
+
+                    AbstractDungeon.player.limbo.addToTop(e);
+                    c.remove();
+                }
+            }
+            return SpireReturn.Return(null);
         }
     }
 
