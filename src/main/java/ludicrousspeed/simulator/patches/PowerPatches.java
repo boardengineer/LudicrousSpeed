@@ -20,9 +20,11 @@ import com.megacrit.cardcrawl.monsters.beyond.AwakenedOne;
 import com.megacrit.cardcrawl.orbs.AbstractOrb;
 import com.megacrit.cardcrawl.orbs.EmptyOrbSlot;
 import com.megacrit.cardcrawl.powers.AbstractPower;
+import com.megacrit.cardcrawl.powers.MayhemPower;
 import com.megacrit.cardcrawl.powers.NoDrawPower;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import ludicrousspeed.LudicrousSpeedMod;
+import savestate.fastobjects.MayhemAction;
 
 import java.util.Collections;
 
@@ -43,6 +45,23 @@ public class PowerPatches {
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = MayhemPower.class,
+            method = "atStartOfTurn"
+    )
+    public static class MayhemPowerActionPatch {
+        @SpirePrefixPatch
+        public static SpireReturn betterAction(MayhemPower power) {
+            power.flash();
+
+            for(int i = 0; i < power.amount; i++) {
+                AbstractDungeon.actionManager.addToBottom(new MayhemAction());
+            }
+
+            return SpireReturn.Return(null);
         }
     }
 
