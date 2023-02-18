@@ -266,6 +266,7 @@ public class CardPatches {
                 card.timesUpgraded = _instance.timesUpgraded;
                 card.baseDamage = _instance.baseDamage;
                 card.baseBlock = _instance.baseBlock;
+                card.block = _instance.block;
                 card.baseMagicNumber = _instance.baseMagicNumber;
                 card.magicNumber = _instance.magicNumber;
                 card.cost = _instance.cost;
