@@ -673,6 +673,7 @@ public class CardPatches {
         @SpirePrefixPatch
         public static SpireReturn alwaysFalse(SoulGroup soulGroup, AbstractCard card, boolean isInvisible) {
             if (LudicrousSpeedMod.plaidMode) {
+                card.clearPowers();
                 AbstractDungeon.player.drawPile.addToTop(card);
                 return SpireReturn.Return(null);
             }
