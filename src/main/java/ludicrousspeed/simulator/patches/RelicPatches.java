@@ -44,8 +44,9 @@ public class RelicPatches {
         @SpireInsertPatch(loc = 127)
         public static SpireReturn Insert(AbstractRelic _instance, String setId, String imgName, AbstractRelic.RelicTier tier, AbstractRelic.LandingSound sfx) {
             if (LudicrousSpeedMod.plaidMode) {
-                // we need to set the tier field to avoid NPE
+                // we need to set these fields to avoid NPE
                 _instance.tier = tier;
+                _instance.name = _instance.relicStrings.NAME;
                 return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();
