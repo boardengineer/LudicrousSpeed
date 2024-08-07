@@ -5,15 +5,9 @@ import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePostfixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
 import com.evacipated.cardcrawl.modthespire.lib.SpireReturn;
-import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
-import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
-import com.megacrit.cardcrawl.dungeons.Exordium;
-import com.megacrit.cardcrawl.rooms.EmptyRoom;
 import ludicrousspeed.LudicrousSpeedMod;
-
-import java.util.ArrayList;
 
 public class ServerStartupPatches {
     @SpirePatch(clz = CardCrawlGame.class, method = "create")
@@ -21,19 +15,19 @@ public class ServerStartupPatches {
         @SpirePostfixPatch
         public static void afterStart(CardCrawlGame game) {
             if (LudicrousSpeedMod.plaidMode) {
-                System.err.println("Skipping Splash Screen for Char Select");
+//                System.err.println("Skipping Splash Screen for Char Select");
+//
+//                // Sets the current dungeon
+//                Settings.seed = 123L;
+//                AbstractDungeon.generateSeeds();
+//
+//                // TODO this needs to be the actual character class or bad things happen
+//                new Exordium(CardCrawlGame.characterManager
+//                        .getCharacter(AbstractPlayer.PlayerClass.IRONCLAD), new ArrayList<>());
+//
+//                AbstractDungeon.currMapNode.room = new EmptyRoom();
 
-                // Sets the current dungeon
-                Settings.seed = 123L;
-                AbstractDungeon.generateSeeds();
-
-                // TODO this needs to be the actual character class or bad things happen
-                new Exordium(CardCrawlGame.characterManager
-                        .getCharacter(AbstractPlayer.PlayerClass.IRONCLAD), new ArrayList<>());
-
-                AbstractDungeon.currMapNode.room = new EmptyRoom();
-
-                CardCrawlGame.mode = CardCrawlGame.GameMode.GAMEPLAY;
+                CardCrawlGame.mode = CardCrawlGame.GameMode.SPLASH;
             }
         }
     }

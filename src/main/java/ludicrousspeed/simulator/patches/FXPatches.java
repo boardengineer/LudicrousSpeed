@@ -201,8 +201,7 @@ public class FXPatches {
         @SpirePrefixPatch
         public static SpireReturn<Long> noSoundInPlaidMode(SoundMaster _instance, String key, float pitchVariation) {
             if (LudicrousSpeedMod.plaidMode) {
-                Long result = 1L;
-                return SpireReturn.Return(result);
+                return SpireReturn.Return(1L);
             }
             return SpireReturn.Continue();
         }
@@ -242,9 +241,9 @@ public class FXPatches {
     )
     public static class NoLocalRelicStringsPatch {
         public static SpireReturn Prefix(LocalizedStrings _instance, String relicName) {
-            if (LudicrousSpeedMod.plaidMode) {
-                return SpireReturn.Return(new RelicStrings());
-            }
+//            if (LudicrousSpeedMod.plaidMode) {
+//                return SpireReturn.Return(new RelicStrings());
+//            }
             return SpireReturn.Continue();
         }
     }
@@ -259,6 +258,19 @@ public class FXPatches {
         public static SpireReturn<CardStrings> Prefix(LocalizedStrings _instance, String cardName) {
             if (LudicrousSpeedMod.plaidMode) {
                 return SpireReturn.Return(MOCK_CARD_STRINGS);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = basemod.patches.com.megacrit.cardcrawl.core.CardCrawlGame.ApplyScreenPostProcessor.class,
+            method = "BeforeSpriteBatchBegin"
+    )
+    public static class Makeitstoppatch {
+        public static SpireReturn<Void> Prefix() {
+            if (LudicrousSpeedMod.plaidMode) {
+                return SpireReturn.Return(null);
             }
             return SpireReturn.Continue();
         }

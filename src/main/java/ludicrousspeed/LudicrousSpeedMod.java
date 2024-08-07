@@ -1,5 +1,6 @@
 package ludicrousspeed;
 
+import basemod.interfaces.OnStartBattleSubscriber;
 import basemod.interfaces.PreUpdateSubscriber;
 import com.megacrit.cardcrawl.actions.GameActionManager;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
@@ -9,7 +10,9 @@ import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
 import com.megacrit.cardcrawl.vfx.cardManip.ExhaustCardEffect;
 import ludicrousspeed.simulator.ActionSimulator;
 
-public class LudicrousSpeedMod implements PreUpdateSubscriber {
+import java.util.ArrayList;
+
+public class LudicrousSpeedMod implements PreUpdateSubscriber, OnStartBattleSubscriber {
     /**
      * Set this controller to your own custom logic
      */
@@ -22,6 +25,8 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber {
     public static boolean plaidMode = false;
 
     public static boolean mustRestart = false;
+
+    public static ArrayList<String> jsonActionLog = new ArrayList<>();
 
     @Override
     public void receivePreUpdate() {
@@ -91,5 +96,10 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber {
 
     private static boolean playerUsingHandSelect() {
         return AbstractDungeon.isScreenUp && AbstractDungeon.screen == AbstractDungeon.CurrentScreen.HAND_SELECT;
+    }
+
+    @Override
+    public void receiveOnBattleStart(AbstractRoom abstractRoom) {
+        abstractRoom.monsters.showIntent();
     }
 }

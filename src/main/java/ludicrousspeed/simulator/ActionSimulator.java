@@ -24,6 +24,9 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.relics.UnceasingTop;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
+import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
+import com.megacrit.cardcrawl.vfx.PlayerTurnEffect;
+import com.megacrit.cardcrawl.vfx.combat.BattleStartEffect;
 import ludicrousspeed.LudicrousSpeedMod;
 import savestate.actions.EnqueueEndTurnAction;
 
@@ -43,6 +46,13 @@ public class ActionSimulator {
      */
     public static void actionLoop() {
         while (shouldWaitOnActions() || shouldStepAiController()) {
+            // This was probably not the fix
+            for (AbstractGameEffect effect : AbstractDungeon.topLevelEffects) {
+                if (effect instanceof PlayerTurnEffect || effect instanceof BattleStartEffect) {
+                    AbstractDungeon.getMonsters().showIntent();
+                }
+            }
+
             AbstractDungeon.topLevelEffects.clear();
             AbstractDungeon.effectList.clear();
             AbstractDungeon.effectsQueue.clear();
@@ -183,7 +193,7 @@ public class ActionSimulator {
                     AbstractDungeon.getMonsters().monsters.stream()
                                                           .flatMap(monster -> monster.powers
                                                                   .stream()).forEach(power -> power
-                            .onPlayCard(queueItem.card, queueItem.monster));
+                                           .onPlayCard(queueItem.card, queueItem.monster));
 
                     AbstractDungeon.player.relics
                             .forEach(relic -> relic.onPlayCard(queueItem.card, queueItem.monster));
@@ -236,6 +246,12 @@ public class ActionSimulator {
         } else if (actionManager.turnHasEnded && !AbstractDungeon.getMonsters()
                                                                  .areMonstersBasicallyDead()) {
 //            actionManager.addToBottom(new TriggerEndOfTurnOrbsAction());
+
+
+            if (!AbstractDungeon.isScreenUp) {
+                AbstractDungeon.getMonsters().showIntent();
+            }
+
             if (!AbstractDungeon.getCurrRoom().skipMonsterTurn) {
                 AbstractDungeon.getCurrRoom().monsters.applyEndOfTurnPowers();
             }
@@ -399,10 +415,10 @@ public class ActionSimulator {
 
     public static boolean shouldWaitOnActions() {
         // Only freeze if the AI is pathing
-        if (LudicrousSpeedMod.controller == null || LudicrousSpeedMod.controller
-                .isDone() || LudicrousSpeedMod.mustRestart) {
-            return false;
-        }
+//        if (LudicrousSpeedMod.controller == null || LudicrousSpeedMod.controller
+//                .isDone() || LudicrousSpeedMod.mustRestart) {
+//            return false;
+//        }
 
         // Screens wait for users even though there are actions in the action manager
         if (AbstractDungeon.isScreenUp) {

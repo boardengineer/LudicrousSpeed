@@ -131,6 +131,7 @@ public class CardPatches {
     public static class FastDiscardPatch {
         @SpirePrefixPatch
         public static SpireReturn Prefix(CardGroup cardGroup, AbstractCard card) {
+            card.clearPowers();
             if (LudicrousSpeedMod.plaidMode) {
                 int startingSize = cardGroup.group.size();
 
@@ -147,7 +148,6 @@ public class CardPatches {
                     }
                 }
 
-                card.clearPowers();
                 AbstractDungeon.player.discardPile.addToTop(card);
                 AbstractDungeon.player.onCardDrawOrDiscard();
 
@@ -386,6 +386,22 @@ public class CardPatches {
                 }
 
                 AbstractDungeon.player.hand.addToTop(card);
+
+                return SpireReturn.Return(null);
+            }
+            return SpireReturn.Continue();
+        }
+    }
+
+    @SpirePatch(
+            clz = ShowCardAndAddToHandEffect.class,
+            method = "update"
+    )
+    public static class ShowCardAndAddToHandEffectPatchThree {
+        @SpirePrefixPatch
+        public static SpireReturn Prefix(ShowCardAndAddToHandEffect _instance) {
+            if (LudicrousSpeedMod.plaidMode) {
+                _instance.isDone = true;
 
                 return SpireReturn.Return(null);
             }
