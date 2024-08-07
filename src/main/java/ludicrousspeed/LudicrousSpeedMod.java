@@ -30,7 +30,9 @@ public class LudicrousSpeedMod implements PreUpdateSubscriber, OnStartBattleSubs
 
     @Override
     public void receivePreUpdate() {
-        if (AbstractDungeon.currMapNode != null && AbstractDungeon.getCurrRoom().monsters != null) {
+        // some event screens display monsters without it being combat
+        if (AbstractDungeon.currMapNode != null && AbstractDungeon.getCurrRoom().monsters != null 
+                && AbstractDungeon.getCurrRoom().phase != AbstractRoom.RoomPhase.EVENT) {
             if (LudicrousSpeedMod.plaidMode) {
                 ActionSimulator.actionLoop();
             } else if (shouldNormalUpdate()) {
